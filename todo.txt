@@ -1,0 +1,15 @@
+Current state: uses rag and hallucinates stories
+
+- use rag to generate tags related to chapter contents
+- then the search, searches through the tags then will print out the chapters associated with those tags?
+
+OR
+- silo the different documents into "memoir", "other stories"
+- data table could be "paragraph", "summary page", "summary chapter"
+- then prompt RAG with 
+    - DOC 1:
+        Summary chapter: _____
+        Summmary page: _____
+        Paragraph: _____
+
+telling a story is a problem --> RAG hallucnates and performs porely
