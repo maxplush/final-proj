@@ -13,3 +13,7 @@ OR
         Paragraph: _____
 
 telling a story is a problem --> RAG hallucnates and performs porely
+
+
+
+# taoist qoutes
