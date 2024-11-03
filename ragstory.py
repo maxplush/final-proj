@@ -9,6 +9,7 @@ import logging
 import os
 import groq
 import sqlite3
+import textwrap
 
 ################################################################################
 # LLM setup
@@ -95,8 +96,6 @@ def load_memoir(file_path):
         memoir_text = file.read()
     return memoir_text
 
-import textwrap
-
 # Define a helper function to split the memoir into chunks
 def split_into_chunks(text, chunk_size=2000):
     '''
@@ -105,23 +104,41 @@ def split_into_chunks(text, chunk_size=2000):
     '''
     return textwrap.wrap(text, chunk_size)
 
+def check_question_appropriateness(user_input):
+    '''
+    Check if the question is appropriate for summarization.
+    This function can be modified to include more sophisticated checks.
+    '''
+    inappropriate_questions = [
+        "tell me a story",
+        "generate a narrative",
+        "what is the moral of the story"
+    ]
+    return not any(phrase in user_input.lower() for phrase in inappropriate_questions)
+
 def chat_with_memoir(user_input, memoir, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
     Chunk the memoir if it's too long for the context window.
     '''
+    # First, check if the question is appropriate
+    if not check_question_appropriateness(user_input):
+        return "I'm sorry, but I can't answer that kind of question."
+
     # Split the memoir into smaller chunks if necessary
     chunks = split_into_chunks(memoir, chunk_size=2000)
     
-    # Use the first chunk or concatenate chunks as needed
-    # (You can modify this behavior depending on how much context you want to provide)
-    system = f"You are an expert assistant, retaining the style of the author, Alan Plush, in your responses. Answer questions based on the memoir content provided below. Be respectful, detailed, and reflect the author's tone and style."
+    # Prepare system and user messages
+    system = ("You are an expert assistant, retaining the style of the author, Alan Plush, "
+              "in your responses. Answer questions based on the memoir content provided below. "
+              "Be respectful, detailed, and reflect the author's tone and style. "
+              "If you do not know the answer, please state that clearly. "
+              "If possible, include quotes and references (e.g. page numbers) in your response.")
     
     # Use the first chunk as context (you can extend this to multiple chunks if needed)
     user = f"Memoir content: {chunks[0]}\n\nUser's question: {user_input}"
     
     return run_llm(system, user, seed=seed)
-
 
 ################################################################################
 # Main interaction
