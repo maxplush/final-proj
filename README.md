@@ -1,6 +1,6 @@
 # Retrieval Augmented Generation (RAG) Story Project ![](https://github.com/maxplush/ragnews-new/workflows/tests/badge.svg)
 
-This project involves Retrieval Augmented Generation (RAG), a method that combines retrieval and generation models to enhance the ability to generate responses based on retrieved information. Specifically, this project focuses on engaging with memoirs, allowing users to ask questions and receive answers that reflect the author's style and content.
+This project involves Retrieval Augmented Generation (RAG), a method that combines retrieval and generation models to enhance the ability to generate responses based on retrieved information. Specifically, this project focuses on engaging with memoirs, allowing users to ask questions and receive answers that reflect the author's style  content.
 
 ## Prerequisites
 
