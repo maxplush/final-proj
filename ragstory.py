@@ -104,58 +104,48 @@ def split_into_chunks(text, chunk_size=2000):
     '''
     return textwrap.wrap(text, chunk_size)
 
-def check_question_appropriateness(user_input):
-    '''
-    Check if the question is appropriate for summarization.
-    This function can be modified to include more sophisticated checks.
-    '''
-    inappropriate_questions = [
-        "tell me a story",
-        "generate a narrative",
-        "what is the moral of the story"
-    ]
-    return not any(phrase in user_input.lower() for phrase in inappropriate_questions)
+def is_appropriate_question(user_input):
+    # This can be a simple keyword-based rule or a small model.
+    storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
+    return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
 
 def search_across_chunks(user_input, chunks, seed=None):
     '''
-    Conducts a search across all chunks for a given user input, and aggregates responses.
+    Searches across all chunks, returning the best summarization response for the question.
     '''
     responses = []
-    for i, chunk in enumerate(chunks):
-        # Prepare the system and user message for each chunk
-        system = ("You are an expert assistant, retaining the style of the author, "
-                  "in your responses. Answer questions based on the memoir content provided below. "
-                  "Be respectful, detailed, and reflect the author's tone and style. "
-                  "If you do not know the answer, please state that clearly.")
-        
+    for chunk in chunks:
+        # Generate a response from the current chunk
+        system = (
+            "You are a knowledgeable assistant summarizing specific details from a memoir. "
+            "Provide clear, factual answers using only the provided text. If you are uncertain, "
+            "respond with 'I don't know' or 'The text does not provide that information.'"
+        )
         user = f"Memoir content: {chunk}\n\nUser's question: {user_input}"
-        
-        # Get the response for the current chunk
         response = run_llm(system, user, seed=seed)
-        
-        # Append the chunk response to the list
-        responses.append(f"--- Response from chunk {i+1} ---\n{response}\n")
 
-    # Combine all responses
-    combined_response = "\n".join(responses)
-    return combined_response
-
+        # Append responses for post-processing and ranking
+        responses.append(response)
+    
+    # Select the best response by ranking (for simplicity, pick the longest relevant answer or keyword-based)
+    best_response = max(responses, key=len)  # Or use a relevance scoring metric here
+    return best_response
 
 def chat_with_memoir(user_input, memoir, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
-    Searches across all chunks for a comprehensive answer.
+    Searches across all chunks and retrieves the best response if the question is appropriate.
     '''
     # First, check if the question is appropriate
-    if not check_question_appropriateness(user_input):
+    if not is_appropriate_question(user_input):
         return "I'm sorry, but I can't answer that kind of question."
 
     # Split the memoir into smaller chunks if necessary
     chunks = split_into_chunks(memoir, chunk_size=2000)
     
-    # Conduct a search across all chunks
-    return search_across_chunks(user_input, chunks, seed=seed)
-
+    # Search across all chunks and return the best response
+    best_response = search_across_chunks(user_input, chunks, seed=seed)
+    return best_response
 
 ################################################################################
 # Main interaction
