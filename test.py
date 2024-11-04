@@ -116,35 +116,10 @@ def check_question_appropriateness(user_input):
     ]
     return not any(phrase in user_input.lower() for phrase in inappropriate_questions)
 
-def search_across_chunks(user_input, chunks, seed=None):
-    '''
-    Conducts a search across all chunks for a given user input, and aggregates responses.
-    '''
-    responses = []
-    for i, chunk in enumerate(chunks):
-        # Prepare the system and user message for each chunk
-        system = ("You are an expert assistant, retaining the style of the author, "
-                  "in your responses. Answer questions based on the memoir content provided below. "
-                  "Be respectful, detailed, and reflect the author's tone and style. "
-                  "If you do not know the answer, please state that clearly.")
-        
-        user = f"Memoir content: {chunk}\n\nUser's question: {user_input}"
-        
-        # Get the response for the current chunk
-        response = run_llm(system, user, seed=seed)
-        
-        # Append the chunk response to the list
-        responses.append(f"--- Response from chunk {i+1} ---\n{response}\n")
-
-    # Combine all responses
-    combined_response = "\n".join(responses)
-    return combined_response
-
-
 def chat_with_memoir(user_input, memoir, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
-    Searches across all chunks for a comprehensive answer.
+    Chunk the memoir if it's too long for the context window.
     '''
     # First, check if the question is appropriate
     if not check_question_appropriateness(user_input):
@@ -153,9 +128,17 @@ def chat_with_memoir(user_input, memoir, seed=None):
     # Split the memoir into smaller chunks if necessary
     chunks = split_into_chunks(memoir, chunk_size=2000)
     
-    # Conduct a search across all chunks
-    return search_across_chunks(user_input, chunks, seed=seed)
-
+    # Prepare system and user messages
+    system = ("You are an expert assistant, retaining the style of the author, Alan Plush, "
+              "in your responses. Answer questions based on the memoir content provided below. "
+              "Be respectful, detailed, and reflect the author's tone and style. "
+              "If you do not know the answer, please state that clearly. "
+              "If possible, include quotes and references (e.g. page numbers) in your response.")
+    
+    # Use the first chunk as context (you can extend this to multiple chunks if needed)
+    user = f"Memoir content: {chunks[0]}\n\nUser's question: {user_input}"
+    
+    return run_llm(system, user, seed=seed)
 
 ################################################################################
 # Main interaction
@@ -185,7 +168,6 @@ if __name__ == '__main__':
     memoir_content = load_memoir_from_db(conn, args.author)
     if memoir_content:
         print(f"Memoir '{args.title}' by {args.author} loaded from the database.")
-        print("\nLoaded memoir content:\n", memoir_content)  # Display full memoir content
         
         # Start a Q&A session with the memoir
         while True:
