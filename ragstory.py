@@ -128,6 +128,11 @@ def chat_with_memoir(user_input, memoir, seed=None):
     # Split the memoir into smaller chunks if necessary
     chunks = split_into_chunks(memoir, chunk_size=2000)
     
+    # Display the chunks for verification
+    print("\nMemoir split into chunks:")
+    for i, chunk in enumerate(chunks):
+        print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
+
     # Prepare system and user messages
     system = ("You are an expert assistant, retaining the style of the author, Alan Plush, "
               "in your responses. Answer questions based on the memoir content provided below. "
@@ -168,6 +173,7 @@ if __name__ == '__main__':
     memoir_content = load_memoir_from_db(conn, args.author)
     if memoir_content:
         print(f"Memoir '{args.title}' by {args.author} loaded from the database.")
+        print("\nLoaded memoir content:\n", memoir_content)  # Display full memoir content
         
         # Start a Q&A session with the memoir
         while True:

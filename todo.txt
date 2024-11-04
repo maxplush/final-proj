@@ -1,9 +1,20 @@
-Current state: uses rag and hallucinates stories
+TODO:
 
-- use rag to generate tags related to chapter contents
-- then the search, searches through the tags then will print out the chapters associated with those tags?
+* create guide about how I am planning on prompt enginiering(spec list of how we will use)
+* sprint to create rubric 
 
-OR
+a good project incorperate the use of LLMS
+
+focus on the problem that I'm trying to solve 
+________________________________________
+BRAINSTORM
+LLM is not used for search but for summarization 
+
+Mike feedback:
+Adding Guardrails
+- You could try to design the prompt to encourage the model to explicitly say it doesn't know the answer to story telling questions. (Perhaps giving it a list of examples of questions that it shouldn't try to answer, and other questions that it should try to answer.)
+-Having a separate model first check to see if the question is appropriate, and then only trying to answer the question if the first model thinks it's appropriate.
+-You could encourage the model (via the prompt) to interleave quotes and references (e.g. page numbers) into it's reply. LLMs tend to be good at quoting and referencing material that is included in their prompt (e.g. via rag). The reputation of LLMs to hallucinate references is when they are trying to reference something that is not included in the prompt, but only included in the original training data, which is not your use case.
 - silo the different documents into "memoir", "other stories"
 - data table could be "paragraph", "summary page", "summary chapter"
 - then prompt RAG with 
@@ -11,8 +22,6 @@ OR
         Summary chapter: _____
         Summmary page: _____
         Paragraph: _____
-
-telling a story is a problem --> RAG hallucnates and performs porely
 
 
 
