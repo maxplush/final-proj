@@ -147,6 +147,8 @@ def chat_with_memoir(user_input, memoir, seed=None):
     best_response = search_across_chunks(user_input, chunks, seed=seed)
     return best_response
 
+# current state is searching acros chunks 
+
 ################################################################################
 # Main interaction
 ################################################################################

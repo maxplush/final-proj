@@ -26,3 +26,7 @@ Adding Guardrails
 
 
 # taoist qoutes
+
+# could I do the following to ranking the searches 
+
+# or what if I broke up the chunks into summarizations --> that are then sent to luma dream 
