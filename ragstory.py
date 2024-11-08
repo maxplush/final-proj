@@ -180,6 +180,8 @@ def chat_with_memoir(user_input, memoir, seed=None):
     # Search across all chapters and return the best response
     best_response = search_across_chunks(user_input, chapters, seed=seed)
     return best_response
+# this part I'm a bit unclear about how does the best_response work and should
+# we focus more on the keywords like in ragnews?
 
 # current state is searching across chunks 
 
