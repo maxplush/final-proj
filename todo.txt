@@ -1,7 +1,9 @@
 TODO:
 
-* create guide about how I am planning on prompt enginiering(spec list of how we will use)
-* sprint to create rubric 
+* add the groq model that prevents against malicous questions
+* create guide about how I am planning on prompt enginiering
+* (spec list of how we will use --> what are the questions we will aim to answer)
+
 
 a good project incorperate the use of LLMS
 
