@@ -11,6 +11,7 @@ import groq
 import sqlite3
 import textwrap
 import argparse
+import re
 
 ################################################################################
 # LLM setup
@@ -72,7 +73,7 @@ def initialize_db(db_path='memoirs.db'):
     conn.commit()
     return conn
 
-def save_memoir_to_db(conn, title, author, content, chunk_size=2000):
+def save_memoir_to_db(conn, title, author, content):
     '''
     Save the memoir and its chunks to the database.
     '''
@@ -86,13 +87,13 @@ def save_memoir_to_db(conn, title, author, content, chunk_size=2000):
     
     memoir_id = cursor.lastrowid  # Get the ID of the newly inserted memoir
     
-    # Split content into chunks and save each chunk
-    chunks = split_into_chunks(content, chunk_size)
-    for chunk in chunks:
+    # Chunk the memoir content by chapters
+    chapters = chunk_by_chapter(content)
+    for chapter in chapters:
         cursor.execute('''
             INSERT INTO memoir_chunks (memoir_id, content)
             VALUES (?, ?)
-        ''', (memoir_id, chunk))
+        ''', (memoir_id, chapter))
     
     conn.commit()
 
@@ -120,13 +121,18 @@ def load_memoir(file_path):
         memoir_text = file.read()
     return memoir_text
 
-# Define a helper function to split the memoir into chunks
-def split_into_chunks(text, chunk_size=2000):
+# Define a function to chunk the memoir by chapters
+def chunk_by_chapter(text):
     '''
-    Splits the memoir text into smaller chunks that can fit within the LLM's context limit.
-    Each chunk should not exceed the specified chunk_size.
+    Splits the memoir into chapters based on the format "Chapter X - Title".
     '''
-    return textwrap.wrap(text, chunk_size)
+    # Regular expression to match chapter headings like "Chapter 5 - Jones Beach Undertow !!!"
+    chapter_pattern = r"(Chapter \d+ - .+?)(?=\nChapter \d+ - |\Z)"
+    
+    # Find all chapters based on the pattern
+    chapters = re.findall(chapter_pattern, text, re.DOTALL)
+
+    return chapters
 
 def is_appropriate_question(user_input):
     # This can be a simple keyword-based rule or a small model.
@@ -159,7 +165,6 @@ def search_across_chunks(conn, user_input, memoir_id, seed=None):
     best_response = max(responses, key=len)
     return best_response
 
-
 def chat_with_memoir(user_input, memoir, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
@@ -169,11 +174,11 @@ def chat_with_memoir(user_input, memoir, seed=None):
     if not is_appropriate_question(user_input):
         return "I'm sorry, but I can't answer that kind of question."
 
-    # Split the memoir into smaller chunks if necessary
-    chunks = split_into_chunks(memoir, chunk_size=2000)
+    # Chunk the memoir by chapters if necessary
+    chapters = chunk_by_chapter(memoir)
     
-    # Search across all chunks and return the best response
-    best_response = search_across_chunks(user_input, chunks, seed=seed)
+    # Search across all chapters and return the best response
+    best_response = search_across_chunks(user_input, chapters, seed=seed)
     return best_response
 
 # current state is searching across chunks 
