@@ -32,3 +32,17 @@ Adding Guardrails
 # could I do the following to ranking the searches 
 
 # or what if I broke up the chunks into summarizations --> that are then sent to luma dream 
+
+
+
+
+ The user's question is not provided, but based on the content of Chapter 17 of the memoir, here are some possible answers to hypothetical questions:
+
+* When did the author go on the hiking trip to the Grand Canyon? The author mentions it was during their junior year, around 1982.
+* Who organized the hiking trip? The trip was organized by the author's friend Wolf, who secured a special permit for the group to hike off the main trail.
+* What happened on the seventh day of the trip? The author got separated from the rest of the group and had to find their way back, which took several hours.
+* What did the author use as a means of starting a fire to signal for help? The author's lighter was used to start a fire to signal for help.
+* Why did the author decide against using the fire to signal for help? The author chose not to use the fire because they were concerned about the potential damage it could cause and nearly incinerating themselves.
+* What did the author see when they reached a clearing after running for several hours? The author saw a group of hikers in the distance, about 50 yards above them.
+* Why was the author furious with Wolf? The author was furious because Wolf had allowed the group to continue hiking without all members, despite knowing that this was a serious risk.
+* What did the author and the rest of the group do after stopping at a local eatery? The author and the rest of the group used the restroom, and to save water, they did not flush the toilets.

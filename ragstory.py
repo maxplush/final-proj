@@ -139,33 +139,31 @@ def is_appropriate_question(user_input):
     storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
     return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
 
-def search_across_chunks(conn, user_input, memoir_id, seed=None):
+def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
     '''
     Searches across memoir chunks in the database and returns the best response.
     '''
-    # Retrieve chunks based on memoir_id
     cursor = conn.cursor()
     cursor.execute('''
         SELECT content FROM memoir_chunks WHERE memoir_id = ?
     ''', (memoir_id,))
     chunks = [row[0] for row in cursor.fetchall()]
-    
+
     responses = []
     for chunk in chunks:
         system = (
-            "You are a knowledgeable assistant summarizing specific details from a memoir. "
+            f"You are a knowledgeable assistant summarizing specific details from a memoir by {author}. "
             "Provide clear, factual answers using only the provided text. If you are uncertain, "
             "respond with 'I don't know' or 'The text does not provide that information.'"
         )
         user = f"Memoir content: {chunk}\n\nUser's question: {user_input}"
         response = run_llm(system, user, seed=seed)
         responses.append(response)
-    
-    # Select the best response by ranking
+
     best_response = max(responses, key=len)
     return best_response
 
-def chat_with_memoir(user_input, memoir, seed=None):
+def chat_with_memoir(user_input, memoir, author, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
     Searches across all chunks and retrieves the best response if the question is appropriate.
@@ -178,8 +176,9 @@ def chat_with_memoir(user_input, memoir, seed=None):
     chapters = chunk_by_chapter(memoir)
     
     # Search across all chapters and return the best response
-    best_response = search_across_chunks(user_input, chapters, seed=seed)
+    best_response = search_across_chunks(user_input, chapters, author, seed=seed)
     return best_response
+
 # this part I'm a bit unclear about how does the best_response work and should
 # we focus more on the keywords like in ragnews?
 
@@ -230,8 +229,15 @@ if __name__ == '__main__':
                     if user_input.lower() == 'exit':
                         break
                     
-                    # Get LLM response based on the memoir and user question
-                    response = search_across_chunks(conn, user_input, memoir_id)
+                    # Call search_across_chunks with correctly ordered arguments
+                    response = search_across_chunks(conn, user_input, memoir_id, args.author)
                     print("\nResponse:\n", response)
             else:
                 print(f"Memoir '{args.title}' by {args.author} not found in the database.")
+
+
+
+# to add new doc 
+# python3 ragstory.py --save --title "alan test" --author "alan plush" --content "alantestdoc.txt"
+# to run
+# python3 ragstory.py --title "alan test" --author "alan plush" 
