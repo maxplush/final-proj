@@ -73,9 +73,20 @@ def initialize_db(db_path='memoirs.db'):
     conn.commit()
     return conn
 
+def add_questions_column(conn):
+    '''
+    Adds a 'questions' column to the memoir_chunks table if it doesn't already exist.
+    '''
+    cursor = conn.cursor()
+    cursor.execute('''
+        ALTER TABLE memoir_chunks ADD COLUMN questions TEXT
+    ''')
+    conn.commit()
+
 def save_memoir_to_db(conn, title, author, content):
     '''
     Save the memoir and its chunks to the database.
+    Generates questions for each chapter using the LLM and stores them in the database.
     '''
     cursor = conn.cursor()
     
@@ -94,9 +105,30 @@ def save_memoir_to_db(conn, title, author, content):
             INSERT INTO memoir_chunks (memoir_id, content)
             VALUES (?, ?)
         ''', (memoir_id, chapter))
+        chunk_id = cursor.lastrowid  # Get the ID of the newly inserted chunk
+
+        # Generate questions for the current chunk
+        questions = generate_questions_for_chunk(author, chapter)
+        
+        # Store questions in the database
+        cursor.execute('''
+            UPDATE memoir_chunks
+            SET questions = ?
+            WHERE chunk_id = ?
+        ''', (questions, chunk_id))
     
     conn.commit()
 
+def generate_questions_for_chunk(author, chapter_content):
+    '''
+    Generates questions for a specific chapter chunk using the LLM.
+    '''
+    system_prompt = (
+        f"Read this chapter about {author} and come up with 2 specific questions "
+        "that can be answered given what you read. Only respond with the two Questions."
+    )
+    questions = run_llm(system_prompt, chapter_content)
+    return questions
 
 def load_memoir_from_db(conn, author):
     '''
@@ -108,6 +140,11 @@ def load_memoir_from_db(conn, author):
     ''', (author,))
     result = cursor.fetchone()
     return result[0] if result else None
+
+
+# Call this function after initializing the database
+conn = initialize_db()
+add_questions_column(conn)
 
 ################################################################################
 # Memoir functions
@@ -187,15 +224,15 @@ def chat_with_memoir(user_input, memoir, author, seed=None):
 ################################################################################
 # Main interaction
 ################################################################################
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Memoir Q&A System")
     parser.add_argument('--save', action='store_true', help="Save a new memoir to the database")
     parser.add_argument('--title', type=str, help="Title of the memoir")
     parser.add_argument('--author', type=str, help="Author of the memoir")
-    parser.add_argument('--content', type=str, help="Path to the text file of the memoir content")
+    parser.add_argument('--content', type=str, help="Path to the text file of the memoir content (required for --save)")
     args = parser.parse_args()
     
+    # Initialize the database connection
     conn = initialize_db()
     
     if args.save:
@@ -211,8 +248,9 @@ if __name__ == '__main__':
     else:
         # Load a memoir for Q&A session
         if not (args.title and args.author):
-            print("To start a Q&A session, please provide --title and --author.")
+            print("To start a Q&A session, please provide both --title and --author.")
         else:
+            # Check if the memoir exists in the database
             cursor = conn.cursor()
             memoir_id = cursor.execute(
                 'SELECT id FROM memoirs WHERE title = ? AND author = ?',
@@ -221,15 +259,16 @@ if __name__ == '__main__':
             
             if memoir_id:
                 memoir_id = memoir_id[0]
-                print(f"Memoir '{args.title}' by {args.author} loaded from the database.")
+                print(f"Memoir '{args.title}' by {args.author} loaded successfully.")
                 
-                # Start the Q&A session
+                # Start interactive Q&A session
                 while True:
                     user_input = input("\nAsk a question about the memoir (or type 'exit' to quit): ")
                     if user_input.lower() == 'exit':
+                        print("Exiting Q&A session.")
                         break
                     
-                    # Call search_across_chunks with correctly ordered arguments
+                    # Retrieve answer using search_across_chunks
                     response = search_across_chunks(conn, user_input, memoir_id, args.author)
                     print("\nResponse:\n", response)
             else:
@@ -237,7 +276,7 @@ if __name__ == '__main__':
 
 
 
-# to add new doc 
+
 # python3 ragstory.py --save --title "alan test" --author "alan plush" --content "alantestdoc.txt"
 # to run
 # python3 ragstory.py --title "alan test" --author "alan plush" 
