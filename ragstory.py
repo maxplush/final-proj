@@ -78,10 +78,14 @@ def add_questions_column(conn):
     Adds a 'questions' column to the memoir_chunks table if it doesn't already exist.
     '''
     cursor = conn.cursor()
-    cursor.execute('''
-        ALTER TABLE memoir_chunks ADD COLUMN questions TEXT
-    ''')
-    conn.commit()
+    try:
+        cursor.execute('''
+            ALTER TABLE memoir_chunks ADD COLUMN questions TEXT
+        ''')
+        conn.commit()
+    except sqlite3.OperationalError:
+        # If the column already exists, we just pass
+        pass
 
 def save_memoir_to_db(conn, title, author, content):
     '''
