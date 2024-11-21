@@ -183,7 +183,14 @@ def is_appropriate_question(user_input):
 def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
     '''
     Searches across memoir chunks in the database and returns the best response.
+    Includes safety check to classify user input before processing.
     '''
+    # Classify the user's input for safety using Llama Guard 3
+    is_safe, guard_response = classify_question_with_guard(user_input)
+    if not is_safe:
+        return f"Your question has been flagged as unsafe. Details: {guard_response}"
+    
+    # Proceed with searching through memoir chunks if the question is safe
     cursor = conn.cursor()
     cursor.execute('''
         SELECT content FROM memoir_chunks WHERE memoir_id = ?
@@ -201,49 +208,48 @@ def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
         response = run_llm(system, user, seed=seed)
         responses.append(response)
 
+    # Return the best response based on the longest length or most relevant content
     best_response = max(responses, key=len)
     return best_response
 
-def is_malicious_question(user_input):
+
+def classify_question_with_guard(user_input):
     '''
-    Use Llama Guard 3 to classify whether the input is malicious or safe.
-    Returns True if the question is deemed unsafe.
+    Classifies the user input for safety using Llama Guard 3.
     '''
     completion = client.chat.completions.create(
         model="llama-guard-3-8b",
         messages=[
             {
-                "role": "system",
-                "content": "Classify this input as either 'safe' or 'unsafe' with reasoning if unsafe."
-            },
-            {
                 "role": "user",
                 "content": user_input,
-            },
+            }
         ],
-        temperature=0,  # Deterministic classification
-        max_tokens=50,
+        temperature=0,
+        max_tokens=1024,
+        top_p=1,
+        stop=None,
     )
-    response = completion.choices[0].message.content.strip().lower()
-    return "unsafe" in response
-
+    response = completion.choices[0].message.content
+    if "unsafe" in response.lower():
+        return False, response  # Unsafe detected, include category information
+    return True, None  # Safe
 
 def chat_with_memoir(user_input, memoir, author, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
-    First filters malicious questions, then searches memoir chunks.
+    Uses Llama Guard 3 to classify questions before responding.
     '''
-    # Step 1: Check for malicious content
-    if is_malicious_question(user_input):
-        return "I'm sorry, but your question is inappropriate and cannot be processed."
-
-    # Step 2: Process the question if it's safe
-    # Chunk the memoir by chapters if necessary
-    chapters = chunk_by_chapter(memoir)
+    # Classify the question for safety
+    is_safe, guard_response = classify_question_with_guard(user_input)
+    if not is_safe:
+        return f"Your question has been flagged as unsafe. Details: {guard_response}"
     
-    # Search across all chapters and return the best response
-    best_response = search_across_chunks(conn, user_input, memoir_id, author, seed=seed)
+    # Proceed with memoir Q&A logic if the question is safe
+    chapters = chunk_by_chapter(memoir)
+    best_response = search_across_chunks(conn, user_input, memoir, author, seed=seed)
     return best_response
+
 
 # def chat_with_memoir(user_input, memoir, author, seed=None):
 #     '''
