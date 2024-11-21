@@ -204,21 +204,62 @@ def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
     best_response = max(responses, key=len)
     return best_response
 
+def is_malicious_question(user_input):
+    '''
+    Use Llama Guard 3 to classify whether the input is malicious or safe.
+    Returns True if the question is deemed unsafe.
+    '''
+    completion = client.chat.completions.create(
+        model="llama-guard-3-8b",
+        messages=[
+            {
+                "role": "system",
+                "content": "Classify this input as either 'safe' or 'unsafe' with reasoning if unsafe."
+            },
+            {
+                "role": "user",
+                "content": user_input,
+            },
+        ],
+        temperature=0,  # Deterministic classification
+        max_tokens=50,
+    )
+    response = completion.choices[0].message.content.strip().lower()
+    return "unsafe" in response
+
+
 def chat_with_memoir(user_input, memoir, author, seed=None):
     '''
     Conduct a Q&A session with the memoir as context.
-    Searches across all chunks and retrieves the best response if the question is appropriate.
+    First filters malicious questions, then searches memoir chunks.
     '''
-    # First, check if the question is appropriate
-    if not is_appropriate_question(user_input):
-        return "I'm sorry, but I can't answer that kind of question."
+    # Step 1: Check for malicious content
+    if is_malicious_question(user_input):
+        return "I'm sorry, but your question is inappropriate and cannot be processed."
 
+    # Step 2: Process the question if it's safe
     # Chunk the memoir by chapters if necessary
     chapters = chunk_by_chapter(memoir)
     
     # Search across all chapters and return the best response
-    best_response = search_across_chunks(user_input, chapters, author, seed=seed)
+    best_response = search_across_chunks(conn, user_input, memoir_id, author, seed=seed)
     return best_response
+
+# def chat_with_memoir(user_input, memoir, author, seed=None):
+#     '''
+#     Conduct a Q&A session with the memoir as context.
+#     Searches across all chunks and retrieves the best response if the question is appropriate.
+#     '''
+#     # First, check if the question is appropriate
+#     if not is_appropriate_question(user_input):
+#         return "I'm sorry, but I can't answer that kind of question."
+
+#     # Chunk the memoir by chapters if necessary
+#     chapters = chunk_by_chapter(memoir)
+    
+#     # Search across all chapters and return the best response
+#     best_response = search_across_chunks(user_input, chapters, author, seed=seed)
+#     return best_response
 
 # this part I'm a bit unclear about how does the best_response work and should
 # we focus more on the keywords like in ragnews?
