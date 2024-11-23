@@ -178,53 +178,96 @@ def is_appropriate_question(user_input):
     storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
     return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
 
-def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
-    '''
-    Searches across memoir chunks in the FTS table and returns the best response.
-    '''
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT content, rank
-        FROM memoir_chunks_fts
-        WHERE memoir_id = ? AND content MATCH ?
-        ORDER BY rank
-    ''', (memoir_id, user_input))
-
-    results = cursor.fetchall()
-
-    # If there are no matches, return a fallback response
-    if not results:
-        return "I couldn't find relevant information in the memoir."
-
-    # Use the highest-ranked result
-    best_match = results[0][0]
-
-    # Use the LLM to generate a response for the matched content
+def extract_keywords(text, seed=None):
+    """
+    Extracts search keywords from user input using the LLM.
+    """
     system = (
-        f"You are a knowledgeable assistant summarizing specific details from a memoir by {author}. "
-        "Provide clear, factual answers using only the provided text. If you are uncertain, "
-        "respond with 'I don't know' or 'The text does not provide that information.'"
+        "You are a professional database query optimizer. "
+        "Given the text below, extract a list of relevant and concise keywords "
+        "that best represent the user's query. "
+        "Return the keywords separated by spaces. Do not include any other text."
     )
-    user = f"Memoir content: {best_match}\n\nUser's question: {user_input}"
-    response = run_llm(system, user, seed=seed)
-    return response
+    keywords = run_llm(system, text, seed=seed).strip()
+    return keywords
+
+
+
+def sanitize_for_match_query(keywords):
+    """
+    Sanitizes extracted keywords for FTS MATCH queries.
+    """
+    sanitized_keywords = re.sub(r'[^\w\s]', '', keywords)  # Remove non-alphanumeric chars
+    sanitized_keywords = ' '.join(sanitized_keywords.split())  # Normalize spaces
+    return f'"{sanitized_keywords}"' if sanitized_keywords else None
+
+
+
+def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
+    """
+    Improved version of search_across_chunks.
+    """
+    # Step 1: Extract keywords
+    keywords = extract_keywords(user_input, seed=seed)
+    if not keywords:
+        return "I couldn't understand your query. Please try rephrasing."
+
+    # Step 2: Sanitize for FTS MATCH
+    sanitized_keywords = sanitize_for_match_query(keywords)
+    if not sanitized_keywords:
+        return "No valid keywords found. Please refine your question."
+
+    # Step 3: Perform FTS MATCH query
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            SELECT content
+            FROM memoir_chunks_fts
+            WHERE memoir_id = ? AND content MATCH ?
+            ORDER BY rank DESC
+        ''', (memoir_id, sanitized_keywords))
+        results = cursor.fetchall()
+    except sqlite3.OperationalError as e:
+        logging.error(f"FTS MATCH query error: {e}")
+        return "An error occurred while searching the memoir."
+
+    if not results:
+        # Fallback: Provide the entire memoir if no matches
+        cursor.execute('''
+            SELECT content
+            FROM memoir_chunks
+            WHERE memoir_id = ?
+        ''', (memoir_id,))
+        full_memoir = " ".join(row[0] for row in cursor.fetchall())
+        user_prompt = f"Memoir text: {full_memoir}\n\nUser's question: {user_input}"
+        system = (
+            f"You are an assistant summarizing content from a memoir by {author}. "
+            "Answer the user's question based on the text provided. If you cannot find "
+            "specific information, respond with 'The memoir does not address this.'"
+        )
+        return run_llm(system, user_prompt, seed=seed)
+
+    # Step 4: Use the highest-ranked chunk for the LLM
+    best_match = results[0][0]
+    system = (
+        f"You are an assistant summarizing content from a memoir by {author}. "
+        "Answer the user's question based on the text provided. If you cannot find "
+        "specific information, respond with 'The memoir does not address this.'"
+    )
+    user_prompt = f"Memoir text: {best_match}\n\nUser's question: {user_input}"
+    return run_llm(system, user_prompt, seed=seed)
 
 
 def chat_with_memoir(user_input, memoir, author, seed=None):
-    '''
-    Conduct a Q&A session with the memoir as context.
-    Searches across all chunks and retrieves the best response if the question is appropriate.
-    '''
-    # First, check if the question is appropriate
+    """
+    Conduct Q&A with the memoir as context.
+    """
+    # Check for question validity
     if not is_appropriate_question(user_input):
-        return "I'm sorry, but I can't answer that kind of question."
+        return "I can't answer that type of question."
 
-    # Chunk the memoir by chapters if necessary
-    chapters = chunk_by_chapter(memoir)
-    
-    # Search across all chapters and return the best response
-    best_response = search_across_chunks(user_input, chapters, author, seed=seed)
-    return best_response
+    # Search and retrieve the best response
+    return search_across_chunks(conn, user_input, memoir_id, author, seed=seed)
 
 # this part I'm a bit unclear about how does the best_response work and should
 # we focus more on the keywords like in ragnews?
@@ -287,6 +330,6 @@ if __name__ == '__main__':
 
 
 
-# python3 ragstory.py --save --title "alan test" --author "alan plush" --content "alantestdoc.txt"
+# python3 ftsstory.py --save --title "alan test" --author "alan plush" --content "alantestdoc.txt"
 # to run
-# python3 ragstory.py --title "alan test" --author "alan plush" 
+# python3 ftsstory.py --title "alan test" --author "alan plush" 
