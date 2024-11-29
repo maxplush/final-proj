@@ -61,12 +61,14 @@ def initialize_db(db_path='memoirs.db'):
     # Create memoir chunks table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS memoir_chunks (
-            chunk_id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY, -- Add this column
             memoir_id INTEGER,
             content TEXT,
+            system_prompt TEXT,
             FOREIGN KEY (memoir_id) REFERENCES memoirs (id)
         )
     ''')
+
 
     # Create an FTS table for fast full-text search
     cursor.execute('''
@@ -76,6 +78,21 @@ def initialize_db(db_path='memoirs.db'):
 
     conn.commit()
     return conn
+
+def add_system_prompt_column(conn):
+    """
+    Ensures the system_prompt column exists in memoir_chunks.
+    """
+    cursor = conn.cursor()
+    cursor.execute('''
+        PRAGMA table_info(memoir_chunks);
+    ''')
+    columns = [row[1] for row in cursor.fetchall()]
+    if 'system_prompt' not in columns:
+        cursor.execute('''
+            ALTER TABLE memoir_chunks ADD COLUMN system_prompt TEXT
+        ''')
+        conn.commit()
 
 def save_memoir_to_db(conn, title, author, content):
     cursor = conn.cursor()
@@ -102,7 +119,19 @@ def save_memoir_to_db(conn, title, author, content):
             VALUES (?, ?, ?)
         ''', (chapter, chunk_id, memoir_id))
 
+        # Generate a system prompt for the chapter
+        system_prompt = generate_system_prompt(author, chapter)
+
+        # Update the system_prompt column in memoir_chunks
+        cursor.execute('''
+            UPDATE memoir_chunks
+            SET system_prompt = ?
+            WHERE id = ?
+        ''', (system_prompt, chunk_id))
+
     conn.commit()
+    print(f"Memoir '{title}' by {author} saved with chunks and system prompts.")
+
 
 def load_memoir_from_db(conn, author):
     '''
@@ -268,6 +297,21 @@ def chat_with_memoir(user_input, memoir, author, seed=None):
     best_response = search_across_chunks(conn, user_input, memoir, author, seed=seed)
     return best_response
 
+def generate_system_prompt(author, chapter_content):
+    """
+    Generates a system prompt for text-to-image generation based on the chapter content.
+    """
+    system_prompt = (
+        f"You are an expert at crafting detailed prompts for text-to-image models."
+        " Based on the chapter below, generate a vivid and descriptive image prompt that includes:\n"
+        "- Key subjects or characters\n"
+        "- Setting (environment, time, atmosphere)\n"
+        "- Mood and emotions\n"
+        "Return only the description, with no extra text or explanations."
+    )
+    image_prompt = run_llm(system_prompt, chapter_content)
+    return image_prompt
+
 # this part I'm a bit unclear about how does the best_response work and should
 # we focus more on the keywords like in ragnews?
 
@@ -286,7 +330,8 @@ if __name__ == '__main__':
     
     # Initialize the database connection
     conn = initialize_db()
-    
+    add_system_prompt_column(conn)
+
     if args.save:
         # Saving a memoir to the database
         if not (args.title and args.author and args.content):
