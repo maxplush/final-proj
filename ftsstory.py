@@ -173,10 +173,10 @@ def chunk_by_chapter(text):
 
     return chapters
 
-def is_appropriate_question(user_input):
-    # This can be a simple keyword-based rule or a small model.
-    storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
-    return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
+# def is_appropriate_question(user_input):
+#     # This can be a simple keyword-based rule or a small model.
+#     storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
+#     return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
 
 def extract_keywords(text, seed=None):
     """
@@ -192,7 +192,6 @@ def extract_keywords(text, seed=None):
     return keywords
 
 
-
 def sanitize_for_match_query(keywords):
     """
     Sanitizes extracted keywords for FTS MATCH queries.
@@ -206,7 +205,13 @@ def sanitize_for_match_query(keywords):
 def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
     """
     Improved version of search_across_chunks.
+    Includes safety check to classify user input before processing.
     """
+    # Classify the user's input for safety using Llama Guard 3
+    is_safe, guard_response = classify_question_with_guard(user_input)
+    if not is_safe:
+        return f"Your question has been flagged as unsafe. Details: {guard_response}"
+    
     # Step 1: Extract keywords
     keywords = extract_keywords(user_input, seed=seed)
     if not keywords:
@@ -257,17 +262,42 @@ def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
     user_prompt = f"Memoir text: {best_match}\n\nUser's question: {user_input}"
     return run_llm(system, user_prompt, seed=seed)
 
+def classify_question_with_guard(user_input):
+    '''
+    Classifies the user input for safety using Llama Guard 3.
+    '''
+    completion = client.chat.completions.create(
+        model="llama-guard-3-8b",
+        messages=[
+            {
+                "role": "user",
+                "content": user_input,
+            }
+        ],
+        temperature=0,
+        max_tokens=1024,
+        top_p=1,
+        stop=None,
+    )
+    response = completion.choices[0].message.content
+    if "unsafe" in response.lower():
+        return False, response  # Unsafe detected, include category information
+    return True, None  # Safe
 
 def chat_with_memoir(user_input, memoir, author, seed=None):
-    """
-    Conduct Q&A with the memoir as context.
-    """
-    # Check for question validity
-    if not is_appropriate_question(user_input):
-        return "I can't answer that type of question."
-
-    # Search and retrieve the best response
-    return search_across_chunks(conn, user_input, memoir_id, author, seed=seed)
+    '''
+    Conduct a Q&A session with the memoir as context.
+    Uses Llama Guard 3 to classify questions before responding.
+    '''
+    # Classify the question for safety
+    is_safe, guard_response = classify_question_with_guard(user_input)
+    if not is_safe:
+        return f"Your question has been flagged as unsafe. Details: {guard_response}"
+    
+    # Proceed with memoir Q&A logic if the question is safe
+    chapters = chunk_by_chapter(memoir)
+    best_response = search_across_chunks(conn, user_input, memoir, author, seed=seed)
+    return best_response
 
 # this part I'm a bit unclear about how does the best_response work and should
 # we focus more on the keywords like in ragnews?
