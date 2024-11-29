@@ -77,21 +77,6 @@ def initialize_db(db_path='memoirs.db'):
     conn.commit()
     return conn
 
-
-def add_questions_column(conn):
-    '''
-    Adds a 'questions' column to the memoir_chunks table if it doesn't already exist.
-    '''
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''
-            ALTER TABLE memoir_chunks ADD COLUMN questions TEXT
-        ''')
-        conn.commit()
-    except sqlite3.OperationalError:
-        # If the column already exists, we just pass
-        pass
-
 def save_memoir_to_db(conn, title, author, content):
     cursor = conn.cursor()
     
@@ -119,19 +104,6 @@ def save_memoir_to_db(conn, title, author, content):
 
     conn.commit()
 
-
-
-def generate_questions_for_chunk(author, chapter_content):
-    '''
-    Generates questions for a specific chapter chunk using the LLM.
-    '''
-    system_prompt = (
-        f"Read this chapter about {author} and come up with 2 specific questions "
-        "that can be answered given what you read. Only respond with the two Questions."
-    )
-    questions = run_llm(system_prompt, chapter_content)
-    return questions
-
 def load_memoir_from_db(conn, author):
     '''
     Load a memoir from the database based on the author's name.
@@ -146,7 +118,6 @@ def load_memoir_from_db(conn, author):
 
 # Call this function after initializing the database
 conn = initialize_db()
-add_questions_column(conn)
 
 ################################################################################
 # Memoir functions
@@ -191,7 +162,6 @@ def extract_keywords(text, seed=None):
     keywords = run_llm(system, text, seed=seed).strip()
     return keywords
 
-
 def sanitize_for_match_query(keywords):
     """
     Sanitizes extracted keywords for FTS MATCH queries.
@@ -199,7 +169,6 @@ def sanitize_for_match_query(keywords):
     sanitized_keywords = re.sub(r'[^\w\s]', '', keywords)  # Remove non-alphanumeric chars
     sanitized_keywords = ' '.join(sanitized_keywords.split())  # Normalize spaces
     return f'"{sanitized_keywords}"' if sanitized_keywords else None
-
 
 
 def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
