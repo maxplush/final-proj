@@ -302,20 +302,15 @@ def generate_system_prompt(author, chapter_content):
     Generates a system prompt for text-to-image generation based on the chapter content.
     """
     system_prompt = (
-        f"You are an expert at crafting detailed prompts for text-to-image models."
-        " Based on the chapter below, generate a vivid and descriptive image prompt that includes:\n"
+        f"You are an expert at crafting concise prompts for text-to-image models."
+        " Based on the chapter below, generate a brief and general image prompt that includes:\n"
         "- Key subjects or characters\n"
-        "- Setting (environment, time, atmosphere)\n"
-        "- Mood and emotions\n"
-        "Return only the description, with no extra text or explanations."
+        "- A high-level description of the setting\n"
+        "- General mood or theme\n"
+        "Keep the prompt short and avoid overly specific details. Return only the description, with no extra text or explanations."
     )
     image_prompt = run_llm(system_prompt, chapter_content)
-    return image_prompt
-
-# this part I'm a bit unclear about how does the best_response work and should
-# we focus more on the keywords like in ragnews?
-
-# current state is searching across chunks 
+    return image_prompt 
 
 ################################################################################
 # Main interaction

@@ -1,12 +1,11 @@
 TODO:
 
-* add the groq model that prevents against malicous questions (Llama Guard 3)
+* (done) add the groq model that prevents against malicous questions (Llama Guard 3)
 * Generate potential QA's to be added to the prompt sent to groq, for formating 
 
 
 * create guide about how I am planning on prompt enginiering
 * (spec list of how we will use --> what are the questions we will aim to answer)
-
 
 a good project incorperate the use of LLMS
 
