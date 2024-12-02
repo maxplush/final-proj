@@ -1,14 +1,39 @@
-1. what sports did alan like
- According to the memoir, Alan Plush mentions enjoying the following sports:
+Potential Questions:
 
-1. Handball
-2. Paddleball
-3. Bowling
-4. Ping-pong
-5. Baseball (although he hated playing Little League)
-6. Ice hockey (he was forced to play, but never enjoyed it)
-7. Basketball (he was very good at and enjoyed playing)
+- Summary and Contextual Questions
+Best for overviews and context, ensuring the LLM stays within the bounds of the memoir.
+Examples:
+"Summarize the main events in Chapter 3 of the memoir."
+"What are the key challenges described during [specific time period/event]?"
+"How does the author describe their relationship with [person/place] in the memoir?"
 
-Note that Alan also mentions his father being an avid athlete and participating in various sports, but the focus of the chapter is on Alan's experiences with these sports.
 
-2. 
+- Detailed Content Extraction
+Ask for specific details that are verifiable within the memoir.
+Examples:
+"List the major cities mentioned in the memoir where significant events took place."
+"What are the most frequently recurring themes in the memoir?"
+"Describe the author's experience during [specific event]."
+"what sports did alan like?"
+"Where and when was alan born?"
+
+- Comparative or Analytical Questions (not sure about this)
+Encourage the LLM to draw inferences based solely on the memoir’s content.
+Examples:
+"How does the author’s perspective on [topic] change over the course of the memoir?"
+"What are the differences between the author's early career and their later career, as described in the memoir?"
+"Compare the descriptions of [specific person/place] to others in the memoir."
+
+- Quotations and Specific Text Retrieval
+Ask for verbatim quotes or paraphrased insights from particular sections.
+Examples:
+"What did the author say about [specific person/event]?"
+"Provide a direct quote from the memoir about [specific event]."
+"What metaphors or similes does the author use to describe [place/experience]?"
+
+- Clarification and Explanatory Questions
+Request explanations or elaborations for complex parts of the memoir.
+Examples:
+"What does the author mean by '[specific phrase]' in Chapter 4?"
+"Explain the significance of [specific event/person] in the memoir."
+"Why was [specific event] a turning point in the author's life?"

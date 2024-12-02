@@ -1,11 +1,12 @@
 TODO:
 
-* (done) add the groq model that prevents against malicous questions (Llama Guard 3)
 * Generate potential QA's to be added to the prompt sent to groq, for formating 
 
+* (spec list of how we will use --> what are the questions we will aim to answer) - in progress
 
-* create guide about how I am planning on prompt enginiering
-* (spec list of how we will use --> what are the questions we will aim to answer)
+to improve search
+- Ask for citations or direct references: Encourage the LLM to refer explicitly to the memoir text (e.g., "Where does the memoir mention this?").
+ - Use controlled prompts: Include a prompt like, “Only use the memoir for your response; avoid adding extra information.”
 
 a good project incorperate the use of LLMS
 
@@ -34,7 +35,6 @@ Adding Guardrails
 # could I do the following to ranking the searches 
 
 # or what if I broke up the chunks into summarizations --> that are then sent to luma dream 
-
 
 
 
