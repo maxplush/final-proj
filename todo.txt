@@ -1,14 +1,24 @@
 TODO:
 
-* Generate potential QA's to be added to the prompt sent to groq, for formating 
+* Integrate text to image generation for each chapter
+    * integrate LUMA Dream API
 
-* (spec list of how we will use --> what are the questions we will aim to answer) - in progress
+* Prompt Improvments:
+    * Generate potential Q and A's for to the prompt sent to groq(for formating)
+    * Ask for citations or direct references: Encourage the LLM to refer explicitly to the memoir text 
+    (e.g., "Where does the memoir mention this?").
+    * (I think I already did this) Use controlled prompts: “Only use the memoir for your response; avoid adding extra information.”
 
-to improve search
-- Ask for citations or direct references: Encourage the LLM to refer explicitly to the memoir text (e.g., "Where does the memoir mention this?").
- - Use controlled prompts: Include a prompt like, “Only use the memoir for your response; avoid adding extra information.”
+* Select which chapter's I will use to publish this project then --> 
+    * Create spec list of questions we will aim to answer (given those chapters)
 
-a good project incorperate the use of LLMS
+Other Potential Improvments
+* Voice Interaction (speech-to-text and text-to-speech)
+* Streamlit UI
+* Personalized System Prompts (Example Use Case: A slider in the interface that switches between "Serious Scholar" and "Casual Friend.")
+* Add Cultural or Historical Context (external APIs like Wikipedia's API to fetch related historical or cultural information based on keywords from the memoir.)
+
+Goal is to create a good project incorperate the use of LLMS
 
 focus on the problem that I'm trying to solve 
 ________________________________________
@@ -27,16 +37,8 @@ Adding Guardrails
         Summary chapter: _____
         Summmary page: _____
         Paragraph: _____
-
-
-
+________________________________________
 # taoist qoutes
-
-# could I do the following to ranking the searches 
-
-# or what if I broke up the chunks into summarizations --> that are then sent to luma dream 
-
-
 
  The user's question is not provided, but based on the content of Chapter 17 of the memoir, here are some possible answers to hypothetical questions:
 

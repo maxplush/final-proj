@@ -1,4 +1,4 @@
-#!/bin/python3
+
 
 '''
 Store a memoir in a database and run an interactive QA session using the Groq LLM API.
