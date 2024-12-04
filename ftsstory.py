@@ -12,6 +12,9 @@ import sqlite3
 import textwrap
 import argparse
 import re
+from monsterapi import client
+import requests
+
 
 ################################################################################
 # LLM setup
@@ -94,6 +97,18 @@ def add_system_prompt_column(conn):
         ''')
         conn.commit()
 
+def add_image_path_column(conn):
+    cursor = conn.cursor()
+    cursor.execute('''
+        PRAGMA table_info(memoir_chunks);
+    ''')
+    columns = [row[1] for row in cursor.fetchall()]
+    if 'image_path' not in columns:
+        cursor.execute('''
+            ALTER TABLE memoir_chunks ADD COLUMN image_path TEXT
+        ''')
+        conn.commit()
+
 def save_memoir_to_db(conn, title, author, content):
     cursor = conn.cursor()
     
@@ -129,9 +144,17 @@ def save_memoir_to_db(conn, title, author, content):
             WHERE id = ?
         ''', (system_prompt, chunk_id))
 
-    conn.commit()
-    print(f"Memoir '{title}' by {author} saved with chunks and system prompts.")
+        # Generate an image for the chapter
+        image_path = generate_image(system_prompt)
+        if image_path:
+            cursor.execute('''
+                UPDATE memoir_chunks
+                SET image_path = ?
+                WHERE id = ?
+            ''', (image_path, chunk_id))
 
+    conn.commit()
+    print(f"Memoir '{title}' by {author} saved with chunks, prompts, and images.")
 
 def load_memoir_from_db(conn, author):
     '''
@@ -312,6 +335,41 @@ def generate_system_prompt(author, chapter_content):
     image_prompt = run_llm(system_prompt, chapter_content)
     return image_prompt 
 
+# Initialize the client with the API key from environment variables
+api_key = os.environ.get("MONSTER_API_KEY")
+monster_client = client(api_key)
+
+def generate_image(prompt):
+    model = 'txt2img'
+    input_data = {
+        'prompt': prompt,
+        'negprompt': 'deformed, bad anatomy, disfigured, poorly drawn face',
+        'samples': 1,
+        'steps': 50,
+        'aspect_ratio': 'square',
+        'guidance_scale': 7.5,
+        'seed': 2414,
+    }
+
+    try:
+        result = monster_client.generate(model, input_data)
+        image_urls = result['output']
+
+        # Save the image locally
+        output_folder = '/path/to/save/images'  # Update this path
+        os.makedirs(output_folder, exist_ok=True)
+
+        image_path = os.path.join(output_folder, f'{hash(prompt)}.png')
+        image_data = requests.get(image_urls[0]).content
+        with open(image_path, 'wb') as image_file:
+            image_file.write(image_data)
+        
+        print(f"Image saved at {image_path}")
+        return image_path
+    except Exception as e:
+        logging.error(f"Error generating image: {e}")
+        return None
+
 ################################################################################
 # Main interaction
 ################################################################################
@@ -326,6 +384,7 @@ if __name__ == '__main__':
     # Initialize the database connection
     conn = initialize_db()
     add_system_prompt_column(conn)
+    add_image_path_column(conn)
 
     if args.save:
         # Saving a memoir to the database
