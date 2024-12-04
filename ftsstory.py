@@ -20,7 +20,7 @@ import requests
 # LLM setup
 ################################################################################
 
-client = groq.Groq(
+groq_client = groq.Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
 
@@ -28,7 +28,7 @@ def run_llm(system, user, model='llama3-8b-8192', seed=None):
     '''
     Helper function to interact with the LLM using the Groq API.
     '''
-    chat_completion = client.chat.completions.create(
+    chat_completion = groq_client.chat.completions.create(
         messages=[
             {
                 'role': 'system',
@@ -287,7 +287,7 @@ def classify_question_with_guard(user_input):
     '''
     Classifies the user input for safety using Llama Guard 3.
     '''
-    completion = client.chat.completions.create(
+    completion = groq_client.chat.completions.create(
         model="llama-guard-3-8b",
         messages=[
             {
@@ -356,7 +356,7 @@ def generate_image(prompt):
         image_urls = result['output']
 
         # Save the image locally
-        output_folder = '/path/to/save/images'  # Update this path
+        output_folder = '/Users/maxplush/Documents/ragnews-new/gen_image'  # Update this path
         os.makedirs(output_folder, exist_ok=True)
 
         image_path = os.path.join(output_folder, f'{hash(prompt)}.png')
