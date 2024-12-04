@@ -1,5 +1,7 @@
 TODO:
 
+* doctests + PEP8style guide
+
 * Integrate text to image generation for each chapter
     * integrate LUMA Dream API
 
