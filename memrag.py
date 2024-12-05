@@ -1,4 +1,4 @@
-#!/bin/python3
+
 
 '''
 Store a memoir in a database and run an interactive QA session using the Groq LLM API.
@@ -12,12 +12,15 @@ import sqlite3
 import textwrap
 import argparse
 import re
+from monsterapi import client
+import requests
+
 
 ################################################################################
 # LLM setup
 ################################################################################
 
-client = groq.Groq(
+groq_client = groq.Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
 
@@ -25,7 +28,7 @@ def run_llm(system, user, model='llama3-8b-8192', seed=None):
     '''
     Helper function to interact with the LLM using the Groq API.
     '''
-    chat_completion = client.chat.completions.create(
+    chat_completion = groq_client.chat.completions.create(
         messages=[
             {
                 'role': 'system',
@@ -46,13 +49,10 @@ def run_llm(system, user, model='llama3-8b-8192', seed=None):
 ################################################################################
 
 def initialize_db(db_path='memoirs.db'):
-    '''
-    Initialize the SQLite database for storing memoirs and their chunks.
-    '''
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
-    # Table for memoirs metadata
+
+    # Create memoirs table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS memoirs (
             id INTEGER PRIMARY KEY,
@@ -60,38 +60,56 @@ def initialize_db(db_path='memoirs.db'):
             author TEXT
         )
     ''')
-    
-    # Table for storing memoir chunks
+
+    # Create memoir chunks table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS memoir_chunks (
-            chunk_id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY, -- Add this column
             memoir_id INTEGER,
             content TEXT,
+            system_prompt TEXT,
             FOREIGN KEY (memoir_id) REFERENCES memoirs (id)
         )
     ''')
+
+
+    # Create an FTS table for fast full-text search
+    cursor.execute('''
+        CREATE VIRTUAL TABLE IF NOT EXISTS memoir_chunks_fts
+        USING fts5(content, chunk_id UNINDEXED, memoir_id UNINDEXED)
+    ''')
+
     conn.commit()
     return conn
 
-def add_questions_column(conn):
-    '''
-    Adds a 'questions' column to the memoir_chunks table if it doesn't already exist.
-    '''
+def add_system_prompt_column(conn):
+    """
+    Ensures the system_prompt column exists in memoir_chunks.
+    """
     cursor = conn.cursor()
-    try:
+    cursor.execute('''
+        PRAGMA table_info(memoir_chunks);
+    ''')
+    columns = [row[1] for row in cursor.fetchall()]
+    if 'system_prompt' not in columns:
         cursor.execute('''
-            ALTER TABLE memoir_chunks ADD COLUMN questions TEXT
+            ALTER TABLE memoir_chunks ADD COLUMN system_prompt TEXT
         ''')
         conn.commit()
-    except sqlite3.OperationalError:
-        # If the column already exists, we just pass
-        pass
+
+def add_image_path_column(conn):
+    cursor = conn.cursor()
+    cursor.execute('''
+        PRAGMA table_info(memoir_chunks);
+    ''')
+    columns = [row[1] for row in cursor.fetchall()]
+    if 'image_path' not in columns:
+        cursor.execute('''
+            ALTER TABLE memoir_chunks ADD COLUMN image_path TEXT
+        ''')
+        conn.commit()
 
 def save_memoir_to_db(conn, title, author, content):
-    '''
-    Save the memoir and its chunks to the database.
-    Generates questions for each chapter using the LLM and stores them in the database.
-    '''
     cursor = conn.cursor()
     
     # Insert memoir metadata
@@ -99,9 +117,8 @@ def save_memoir_to_db(conn, title, author, content):
         INSERT INTO memoirs (title, author)
         VALUES (?, ?)
     ''', (title, author))
-    
-    memoir_id = cursor.lastrowid  # Get the ID of the newly inserted memoir
-    
+    memoir_id = cursor.lastrowid
+
     # Chunk the memoir content by chapters
     chapters = chunk_by_chapter(content)
     for chapter in chapters:
@@ -109,30 +126,35 @@ def save_memoir_to_db(conn, title, author, content):
             INSERT INTO memoir_chunks (memoir_id, content)
             VALUES (?, ?)
         ''', (memoir_id, chapter))
-        chunk_id = cursor.lastrowid  # Get the ID of the newly inserted chunk
+        chunk_id = cursor.lastrowid
 
-        # Generate questions for the current chunk
-        questions = generate_questions_for_chunk(author, chapter)
-        
-        # Store questions in the database
+        # Add to FTS table
+        cursor.execute('''
+            INSERT INTO memoir_chunks_fts (content, chunk_id, memoir_id)
+            VALUES (?, ?, ?)
+        ''', (chapter, chunk_id, memoir_id))
+
+        # Generate a system prompt for the chapter
+        system_prompt = generate_system_prompt(author, chapter)
+
+        # Update the system_prompt column in memoir_chunks
         cursor.execute('''
             UPDATE memoir_chunks
-            SET questions = ?
-            WHERE chunk_id = ?
-        ''', (questions, chunk_id))
-    
-    conn.commit()
+            SET system_prompt = ?
+            WHERE id = ?
+        ''', (system_prompt, chunk_id))
 
-def generate_questions_for_chunk(author, chapter_content):
-    '''
-    Generates questions for a specific chapter chunk using the LLM.
-    '''
-    system_prompt = (
-        f"Read this chapter about {author} and come up with 2 specific questions "
-        "that can be answered given what you read. Only respond with the two Questions."
-    )
-    questions = run_llm(system_prompt, chapter_content)
-    return questions
+        # Generate an image for the chapter
+        image_path = generate_image(system_prompt)
+        if image_path:
+            cursor.execute('''
+                UPDATE memoir_chunks
+                SET image_path = ?
+                WHERE id = ?
+            ''', (image_path, chunk_id))
+
+    conn.commit()
+    print(f"Memoir '{title}' by {author} saved with chunks, prompts, and images.")
 
 def load_memoir_from_db(conn, author):
     '''
@@ -148,7 +170,6 @@ def load_memoir_from_db(conn, author):
 
 # Call this function after initializing the database
 conn = initialize_db()
-add_questions_column(conn)
 
 ################################################################################
 # Memoir functions
@@ -175,49 +196,97 @@ def chunk_by_chapter(text):
 
     return chapters
 
-def is_appropriate_question(user_input):
-    # This can be a simple keyword-based rule or a small model.
-    storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
-    return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
+# def is_appropriate_question(user_input):
+#     # This can be a simple keyword-based rule or a small model.
+#     storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
+#     return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
+
+def extract_keywords(text, seed=None):
+    """
+    Extracts search keywords from user input using the LLM.
+    """
+    system = (
+        "You are a professional database query optimizer. "
+        "Given the text below, extract a list of relevant and concise keywords "
+        "that best represent the user's query. "
+        "Return the keywords separated by spaces. Do not include any other text."
+    )
+    keywords = run_llm(system, text, seed=seed).strip()
+    return keywords
+
+def sanitize_for_match_query(keywords):
+    """
+    Sanitizes extracted keywords for FTS MATCH queries.
+    """
+    sanitized_keywords = re.sub(r'[^\w\s]', '', keywords)  # Remove non-alphanumeric chars
+    sanitized_keywords = ' '.join(sanitized_keywords.split())  # Normalize spaces
+    return f'"{sanitized_keywords}"' if sanitized_keywords else None
 
 def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
-    '''
-    Searches across memoir chunks in the database and returns the best response.
+    """
+    Improved version of search_across_chunks.
     Includes safety check to classify user input before processing.
-    '''
+    """
     # Classify the user's input for safety using Llama Guard 3
     is_safe, guard_response = classify_question_with_guard(user_input)
     if not is_safe:
         return f"Your question has been flagged as unsafe. Details: {guard_response}"
     
-    # Proceed with searching through memoir chunks if the question is safe
+    # Step 1: Extract keywords
+    keywords = extract_keywords(user_input, seed=seed)
+    if not keywords:
+        return "I couldn't understand your query. Please try rephrasing."
+
+    # Step 2: Sanitize for FTS MATCH
+    sanitized_keywords = sanitize_for_match_query(keywords)
+    if not sanitized_keywords:
+        return "No valid keywords found. Please refine your question."
+
+    # Step 3: Perform FTS MATCH query
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT content FROM memoir_chunks WHERE memoir_id = ?
-    ''', (memoir_id,))
-    chunks = [row[0] for row in cursor.fetchall()]
+    try:
+        cursor.execute('''
+            SELECT content
+            FROM memoir_chunks_fts
+            WHERE memoir_id = ? AND content MATCH ?
+            ORDER BY rank DESC
+        ''', (memoir_id, sanitized_keywords))
+        results = cursor.fetchall()
+    except sqlite3.OperationalError as e:
+        logging.error(f"FTS MATCH query error: {e}")
+        return "An error occurred while searching the memoir."
 
-    responses = []
-    for chunk in chunks:
+    if not results:
+        # Fallback: Provide the entire memoir if no matches
+        cursor.execute('''
+            SELECT content
+            FROM memoir_chunks
+            WHERE memoir_id = ?
+        ''', (memoir_id,))
+        full_memoir = " ".join(row[0] for row in cursor.fetchall())
+        user_prompt = f"Memoir text: {full_memoir}\n\nUser's question: {user_input}"
         system = (
-            f"You are a knowledgeable assistant summarizing specific details from a memoir by {author}. "
-            "Provide clear, factual answers using only the provided text. If you are uncertain, "
-            "respond with 'I don't know' or 'The text does not provide that information.'"
+            f"You are an assistant summarizing content from a memoir by {author}. "
+            "Answer the user's question based on the text provided. If you cannot find "
+            "specific information, respond with 'The memoir does not address this.'"
         )
-        user = f"Memoir content: {chunk}\n\nUser's question: {user_input}"
-        response = run_llm(system, user, seed=seed)
-        responses.append(response)
+        return run_llm(system, user_prompt, seed=seed)
 
-    # Return the best response based on the longest length or most relevant content
-    best_response = max(responses, key=len)
-    return best_response
-
+    # Step 4: Use the highest-ranked chunk for the LLM
+    best_match = results[0][0]
+    system = (
+        f"You are an assistant summarizing content from a memoir by {author}. "
+        "Answer the user's question based on the text provided. If you cannot find "
+        "specific information, respond with 'The memoir does not address this.'"
+    )
+    user_prompt = f"Memoir text: {best_match}\n\nUser's question: {user_input}"
+    return run_llm(system, user_prompt, seed=seed)
 
 def classify_question_with_guard(user_input):
     '''
     Classifies the user input for safety using Llama Guard 3.
     '''
-    completion = client.chat.completions.create(
+    completion = groq_client.chat.completions.create(
         model="llama-guard-3-8b",
         messages=[
             {
@@ -250,27 +319,54 @@ def chat_with_memoir(user_input, memoir, author, seed=None):
     best_response = search_across_chunks(conn, user_input, memoir, author, seed=seed)
     return best_response
 
+def generate_system_prompt(author, chapter_content):
+    """
+    Generates a system prompt for text-to-image generation based on the chapter content.
+    """
+    system_prompt = (
+        f"You are an expert at crafting concise prompts for text-to-image models."
+        " Based on the chapter below, generate a brief and general image prompt that includes:\n"
+        "- A high-level description of the setting\n"
+        "- Mood or atmosphere: Specify the emotional or visual tone\n"
+        "Return only the description. Avoid extra commentary, explanations, or formatting."
+    )
+    image_prompt = run_llm(system_prompt, chapter_content)
+    return image_prompt 
 
-# def chat_with_memoir(user_input, memoir, author, seed=None):
-#     '''
-#     Conduct a Q&A session with the memoir as context.
-#     Searches across all chunks and retrieves the best response if the question is appropriate.
-#     '''
-#     # First, check if the question is appropriate
-#     if not is_appropriate_question(user_input):
-#         return "I'm sorry, but I can't answer that kind of question."
+# Initialize the client with the API key from environment variables
+api_key = os.environ.get("MONSTER_API_KEY")
+monster_client = client(api_key)
 
-#     # Chunk the memoir by chapters if necessary
-#     chapters = chunk_by_chapter(memoir)
-    
-#     # Search across all chapters and return the best response
-#     best_response = search_across_chunks(user_input, chapters, author, seed=seed)
-#     return best_response
+def generate_image(prompt):
+    model = 'txt2img'
+    input_data = {
+        'prompt': prompt,
+        'negprompt': 'deformed, bad anatomy, disfigured, poorly drawn face',
+        'samples': 1,
+        'steps': 50,
+        'aspect_ratio': 'square',
+        'guidance_scale': 7.5,
+        'seed': 2414,
+    }
 
-# this part I'm a bit unclear about how does the best_response work and should
-# we focus more on the keywords like in ragnews?
+    try:
+        result = monster_client.generate(model, input_data)
+        image_urls = result['output']
 
-# current state is searching across chunks 
+        # Save the image locally
+        output_folder = '/Users/maxplush/Documents/ragnews-new/gen_image'  # Update this path
+        os.makedirs(output_folder, exist_ok=True)
+
+        image_path = os.path.join(output_folder, f'{hash(prompt)}.png')
+        image_data = requests.get(image_urls[0]).content
+        with open(image_path, 'wb') as image_file:
+            image_file.write(image_data)
+        
+        print(f"Image saved at {image_path}")
+        return image_path
+    except Exception as e:
+        logging.error(f"Error generating image: {e}")
+        return None
 
 ################################################################################
 # Main interaction
@@ -285,7 +381,9 @@ if __name__ == '__main__':
     
     # Initialize the database connection
     conn = initialize_db()
-    
+    add_system_prompt_column(conn)
+    add_image_path_column(conn)
+
     if args.save:
         # Saving a memoir to the database
         if not (args.title and args.author and args.content):
@@ -328,6 +426,6 @@ if __name__ == '__main__':
 
 
 
-# python3 ragstory.py --save --title "alan test" --author "alan plush" --content "alantestdoc.txt"
+# python3 memrag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
 # to run
-# python3 ragstory.py --title "alan test" --author "alan plush" 
+# python3 memrag.py --title "alan test" --author "alan plush" 
