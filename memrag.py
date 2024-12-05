@@ -71,7 +71,6 @@ def initialize_db(db_path='memoirs.db'):
         )
     ''')
 
-
     # Create an FTS table for fast full-text search
     cursor.execute('''
         CREATE VIRTUAL TABLE IF NOT EXISTS memoir_chunks_fts
@@ -81,6 +80,7 @@ def initialize_db(db_path='memoirs.db'):
     conn.commit()
     return conn
 
+# Add column for text to image system prompt
 def add_system_prompt_column(conn):
     """
     Ensures the system_prompt column exists in memoir_chunks.
@@ -96,6 +96,7 @@ def add_system_prompt_column(conn):
         ''')
         conn.commit()
 
+# Add column for generated image path
 def add_image_path_column(conn):
     cursor = conn.cursor()
     cursor.execute('''
