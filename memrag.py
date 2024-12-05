@@ -63,7 +63,7 @@ def initialize_db(db_path='memoirs.db'):
     # Create memoir chunks table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS memoir_chunks (
-            id INTEGER PRIMARY KEY, -- Add this column
+            id INTEGER PRIMARY KEY,
             memoir_id INTEGER,
             content TEXT,
             system_prompt TEXT,

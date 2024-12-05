@@ -1,3 +1,15 @@
+Mike Final Feedback:
+* automating tests to see LLM performance
+    * tests would loop through a csv file that has potential answer key words for questions
+    * five keywords for each answer
+    * adding a debuging flag if there is a Q without a correct A
+    * have in readme 
+        * how to run the test file, the output it should be
+        * paragraph explanation for testing methadology 
+
+* streamlit UI 
+
+________________________________________
 TODO:
 
 * doctests + PEP8style guide
@@ -11,14 +23,9 @@ TODO:
     (e.g., "Where does the memoir mention this?").
     * (I think I already did this) Use controlled prompts: “Only use the memoir for your response; avoid adding extra information.”
 
-* Select which chapter's I will use to publish this project then --> 
-    * Create spec list of questions we will aim to answer (given those chapters)
-
 Other Potential Improvments
 * Voice Interaction (speech-to-text and text-to-speech)
 * Streamlit UI
-* Personalized System Prompts (Example Use Case: A slider in the interface that switches between "Serious Scholar" and "Casual Friend.")
-* Add Cultural or Historical Context (external APIs like Wikipedia's API to fetch related historical or cultural information based on keywords from the memoir.)
 
 Goal is to create a good project incorperate the use of LLMS
 
