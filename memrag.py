@@ -220,8 +220,8 @@ def sanitize_for_match_query(keywords):
 
 def search_across_chunks(conn, user_input, memoir_id, author, seed=None):
     """
-    Improved version of search_across_chunks.
-    Includes safety check to classify user input before processing.
+    Safety checks to classify user input before processing.
+    Extracts keywords and uses FTS match to return highest ranked chunk.
     """
     # Classify the user's input for safety using Llama Guard 3
     is_safe, guard_response = classify_question_with_guard(user_input)
@@ -363,6 +363,9 @@ def generate_image(prompt):
     except Exception as e:
         logging.error(f"Error generating image: {e}")
         return None
+
+# Suppress HTTPX logs
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 ################################################################################
 # Main interaction
