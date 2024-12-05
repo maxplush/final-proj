@@ -9,7 +9,6 @@ import logging
 import os
 import groq
 import sqlite3
-import textwrap
 import argparse
 import re
 from monsterapi import client
@@ -166,10 +165,6 @@ def load_memoir_from_db(conn, author):
     ''', (author,))
     result = cursor.fetchone()
     return result[0] if result else None
-
-
-# Call this function after initializing the database
-conn = initialize_db()
 
 ################################################################################
 # Memoir functions
@@ -422,9 +417,6 @@ if __name__ == '__main__':
                     print("\nResponse:\n", response)
             else:
                 print(f"Memoir '{args.title}' by {args.author} not found in the database.")
-
-
-
 
 # python3 memrag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
 # to run
