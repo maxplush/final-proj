@@ -37,3 +37,20 @@ Examples:
 "What does the author mean by '[specific phrase]' in Chapter 4?"
 "Explain the significance of [specific event/person] in the memoir."
 "Why was [specific event] a turning point in the author's life?"
+
+Chapter 13 - Dead End
+Q: what jobs did alan hold?
+
+A: Response:
+ According to the memoir, Alan held the following jobs:
+
+1. Shoveling snow during winter in high school
+2. Running his own booth at the Roosevelt Raceway flea market after learning the ropes from the Peterfriends
+3. Working at a local fruit and vegetable store on Union Turnpike
+4. Working as a painter for a commercial painting company
+5. Running freight elevators at 150 and 148 Nassau Street in NYC
+6. Working for a company called Reminiscence in NYC, where he entered the textile business in his 20's
+
+Jones Beach Chapter
+Q: what happend to alan in the water at Jones Beach?
+A: According to the memoir, Alan got caught in a major undertow/riptide while swimming at Jones Beach. He tried to swim back to shore but was struggling to stay afloat. The lifeguard blew their whistle and waved their arms to summon Alan to come to shore, and eventually, the lifeguard had to dive into the water to rescue Alan, pulling him back to safety and reassuring him that "you're okay, you're okay".

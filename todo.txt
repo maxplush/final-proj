@@ -2,7 +2,7 @@ TODO:
 
 * doctests + PEP8style guide
 
-* Integrate text to image generation for each chapter
+* (done) Integrate text to image generation for each chapter
     * integrate LUMA Dream API
 
 * Prompt Improvments:
@@ -52,3 +52,6 @@ ________________________________________
 * What did the author see when they reached a clearing after running for several hours? The author saw a group of hikers in the distance, about 50 yards above them.
 * Why was the author furious with Wolf? The author was furious because Wolf had allowed the group to continue hiking without all members, despite knowing that this was a serious risk.
 * What did the author and the rest of the group do after stopping at a local eatery? The author and the rest of the group used the restroom, and to save water, they did not flush the toilets.
+
+
+file names of generated images (not nessecary)
