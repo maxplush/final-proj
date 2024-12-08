@@ -8,6 +8,7 @@ Mike Final Feedback:
         * paragraph explanation for testing methadology 
 
 * streamlit UI 
+* add the violations descriptions 
 
 ________________________________________
 TODO:
