@@ -55,6 +55,7 @@ To run this project, you must:
    This allows you to read chapters and ask questions about the content.
 
 3. **Command-Line Interaction**:
+
    Interact with the memoir RAG via the terminal:
    ```bash
    python3 memoir_rag.py --title "alan test" --author "alan plush"
