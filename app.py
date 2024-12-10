@@ -3,7 +3,6 @@ import sqlite3
 import logging
 from memrag import (
     search_across_chunks,
-    save_memoir_to_db,
     add_image_path_column,  # Ensure you import this function
 )
 
@@ -77,7 +76,7 @@ def main():
 
     # Initialize the database and load memoirs
     conn = initialize_db()
-    memoir_id = 1  # You can modify this as per the memoir ID you want to interact with
+    memoir_id = 1  # Modify this as per the memoir ID you want to interact with
     
     # Load memoir content and display it
     memoir_data = load_memoir_from_db(conn, memoir_id)
