@@ -29,7 +29,9 @@ To run this project, you must:
 
 ## How to Run
 
-1. **Test LLM Quality**:  
+### Testing the Quality of the LLM Output
+
+1. **Test Accuracy of LLM Output**:  
    Run the `test_memoir_rag.py` file to process the memoir and evaluate the LLM's accuracy:
    ```bash
    python3 test_memoir_rag.py
