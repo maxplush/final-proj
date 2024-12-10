@@ -1,7 +1,11 @@
 
 # RAG Project: My Father's Memoir
 
-This project centers around the memoir of my late father, using a Retrieval-Augmented Generation (RAG) approach. I utilized the Groq RAG LLM to process text from select chapters of his memoir and integrated Monster GPT to generate AI images based on the content of each chapter. I also used Streamlit to create a front-end interface for interaction with the application.
+Before his passing, my father wrote a memoir, capturing his life and stories. Five years later, I wanted an to create an interactive experience for exploring the memoir.
+
+This project is a exploration of my late father's memoir using a Retrieval-Augmented Generation (RAG) approach to create an interactive experience for exploring the memoir. Through LLM keyword extraction from user questions and performing full-text searches (FTS5), it retrieves the most relevant passages.
+
+I also used Streamlit to create a simple interactive front end with AI-generated images from Monster API, that uses the Pix-Art-Sigma text-to-image model. Currently, three short chapters are included—those I feel comfortable sharing.
 
 ## Requirements
 
@@ -42,6 +46,7 @@ To run this project, you must:
    ```
    This process:
    - Chunks the memoir by chapters.
+   - An LLM extracts keywords from the user's question.
    - Creates a SQLite database with FTS5 full-text search.
    - Generates system prompt for text-image model.
    - Generates a image from MonsterGPT's txt2image model for each chapter.
@@ -83,3 +88,5 @@ To run this project, you must:
 - **AI-Generated Chapter Images**:  
   Uses Monster GPT to create unique visual images for each chapter.
 
+- **Full-Text Search**:  
+   LLM genereated keywords are used to perform a full-text search (FTS5), retrieving the most relevant passages.
