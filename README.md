@@ -67,3 +67,6 @@ python3 memrag.py --title "alan test" --author "alan plush"
 ## Additional Features
 
 1. **Guard Rails for Malicious Questions**: I added an additional Groq LLM feature, Llama Guard 3, to detect malicious questions and ensure safe responses from the system.
+
+Add tests score and output
+also add venv creation
