@@ -11,10 +11,10 @@ To run this project, you must:
 2. Create a **Monster API key**.
 3. Store these keys in a `.env` file with the following format:
 
-```
-GROQ_API_KEY=your_groq_api_key
-MONSTER_API_KEY=your_monster_api_key
-```
+   ```
+   GROQ_API_KEY=your_groq_api_key
+   MONSTER_API_KEY=your_monster_api_key
+   ```
 
 4. Install the required dependencies by running the following command:
    ```bash
