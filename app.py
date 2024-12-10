@@ -1,62 +1,98 @@
 import streamlit as st
 import sqlite3
-import os
-from PIL import Image
+import logging
+from memrag import (
+    search_across_chunks,
+    save_memoir_to_db,
+    add_image_path_column,  # Ensure you import this function
+)
 
-# Initialize database connection
-def get_db_connection():
-    db_path = 'memoirs.db'
+def initialize_db(db_path='memoirs.db'):
     conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Create memoirs table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS memoirs (
+            id INTEGER PRIMARY KEY,
+            title TEXT,
+            author TEXT
+        )
+    ''')
+
+    # Create memoir chunks table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS memoir_chunks (
+            id INTEGER PRIMARY KEY,
+            memoir_id INTEGER,
+            content TEXT,
+            system_prompt TEXT,
+            image_path TEXT,  -- Add the image_path column directly here
+            FOREIGN KEY (memoir_id) REFERENCES memoirs (id)
+        )
+    ''')
+
+    # Create an FTS table for fast full-text search
+    cursor.execute('''
+        CREATE VIRTUAL TABLE IF NOT EXISTS memoir_chunks_fts
+        USING fts5(content, chunk_id UNINDEXED, memoir_id UNINDEXED)
+    ''')
+
+    # Ensure image_path column is present
+    add_image_path_column(conn)
+
+    conn.commit()
     return conn
 
-# Load data from the database
-def load_memoir_chunks(conn):
+def load_memoir_from_db(conn, memoir_id):
+    """Load memoir content and associated images from the database."""
     cursor = conn.cursor()
+
+    # Fetch memoir details (content, image_path, and author)
     cursor.execute('''
-        SELECT image_path, content FROM memoir_chunks
-    ''')
-    return cursor.fetchall()
+        SELECT memoirs.author, memoir_chunks.content, memoir_chunks.image_path
+        FROM memoirs
+        JOIN memoir_chunks ON memoir_chunks.memoir_id = memoirs.id
+        WHERE memoirs.id = ?
+    ''', (memoir_id,))
+    memoir_data = cursor.fetchall()
 
-# Function to interact with the LLM
-def query_llm(author, question, title):
-    import groq
-    groq_client = groq.Groq(api_key=os.environ.get("GROQ_API_KEY"))
-    system_prompt = f"You are an assistant summarizing a memoir by {author}. Answer the user's question based on the text from the memoir '{title}'."
-    chat_completion = groq_client.chat.completions.create(
-        messages=[
-            {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': question},
-        ],
-        model="llama3-8b-8192",
-    )
-    return chat_completion.choices[0].message.content
+    return memoir_data
 
-# Streamlit App Layout
-st.title("Memoir Interactive QA")
+def display_memoir_content(memoir_data):
+    """Display memoir chunks and associated images in Streamlit."""
+    for author, chunk, image_path in memoir_data:
+        if image_path:
+            st.image(image_path, caption="Monster API generated memoir chapter image", use_container_width=True)  # Display associated image
+            st.write(chunk)  # Display text content of memoir chunk
 
-# Display loaded memoir chunks
-conn = get_db_connection()
-memoir_chunks = load_memoir_chunks(conn)
+def handle_user_question(conn, user_input, memoir_id, author):
+    """Handle user input, search across memoir chunks, and return relevant content."""
+    # Get the response from the RAG system (search across chunks)
+    response = search_across_chunks(conn, user_input, memoir_id, author)
+    return response
 
-st.subheader("Memoir Chapters")
-for image_path, content in memoir_chunks:
-    if image_path:
-        image = Image.open(image_path)
-        st.image(image, use_container_width=True)
-    st.write(content)
+def main():
+    st.title("Memoir Interactive QA")
 
-# Interactive QA section
-st.subheader("Ask Questions About the Memoir")
-author = "Alan Plush"
-title = "Alan Test"
-question = st.text_input("Enter your question:")
+    # Initialize the database and load memoirs
+    conn = initialize_db()
+    memoir_id = 1  # You can modify this as per the memoir ID you want to interact with
+    
+    # Load memoir content and display it
+    memoir_data = load_memoir_from_db(conn, memoir_id)
+    display_memoir_content(memoir_data)
 
-if st.button("Get Answer"):
-    if question:
-        response = query_llm(author, question, title)
-        st.text_area("LLM Response:", response, height=200)
-    else:
-        st.error("Please enter a question.")
+    # Extract the author for use in search
+    author = memoir_data[0][0] if memoir_data else None
 
-# Close the database connection
-conn.close()
+    # User input for Q&A
+    user_input = st.text_input("Ask a question about the memoir:")
+
+    if user_input and author:
+        # Get the answer from the system (using the RAG system)
+        response = handle_user_question(conn, user_input, memoir_id, author)
+        st.write(f"**Answer:** {response}")
+
+if __name__ == "__main__":
+    main()

@@ -425,3 +425,4 @@ if __name__ == '__main__':
 # python3 memrag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
 # to run
 # python3 memrag.py --title "alan test" --author "alan plush" 
+
