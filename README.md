@@ -25,7 +25,7 @@ To run this project, you must:
 
 ### Testing the Quality of the LLM Output
 
-To test the quality of the LLM output, I created the `testrag.py` file. This script performs the following steps:
+To test the quality of the LLM output, I created the `test_memoir_rag.py` file. This script performs the following steps:
 
 1. Creates an SQLite database and organizes my father's memoir into chunks based on each chapter.
 2. Creates a Full-Text Search (FTS5) table in the database.
@@ -52,16 +52,16 @@ This will launch the front-end application on your local host, allowing you to r
 
 If you'd like to interact with the LLM via the terminal, you can run the following command:
 ```bash
-python3 memrag.py --title "alan test" --author "alan plush"
+python3 memoir_rag.py --title "alan test" --author "alan plush"
 ```
 Note that the database will already be pre-loaded if you ran the `testrag.py` function.
 
-### Skipping the `testrag.py` Step
+### Skipping the `test_memoir_rag.py` Step
 
 If you'd like to skip the `testrag.py` step, you can manually load the content by running the following commands:
 ```bash
-python3 memrag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
-python3 memrag.py --title "alan test" --author "alan plush"
+python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
+python3 memoir_rag.py --title "alan test" --author "alan plush"
 ```
 
 ## Additional Features
@@ -70,3 +70,4 @@ python3 memrag.py --title "alan test" --author "alan plush"
 
 Add tests score and output
 also add venv creation
+change file namesto be more apropriate

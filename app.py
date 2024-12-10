@@ -1,6 +1,6 @@
 import sqlite3
 import streamlit as st
-from memrag import search_across_chunks
+from memoir_rag import search_across_chunks
 
 def load_memoir_from_db(conn, memoir_id):
     cursor = conn.cursor()

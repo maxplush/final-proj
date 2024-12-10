@@ -1,7 +1,7 @@
 import csv
 import sqlite3
 import logging
-from memrag import (
+from memoir_rag import (
     search_across_chunks,
     save_memoir_to_db,
     add_image_path_column,  # Ensure you import this function
