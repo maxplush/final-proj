@@ -192,11 +192,6 @@ def chunk_by_chapter(text):
 
     return chapters
 
-# def is_appropriate_question(user_input):
-#     # This can be a simple keyword-based rule or a small model.
-#     storytelling_keywords = ["tell me", "make up", "create a story", "imagine"]
-#     return not any(keyword in user_input.lower() for keyword in storytelling_keywords)
-
 def extract_keywords(text, seed=None):
     """
     Extracts search keywords from user input using the LLM.
