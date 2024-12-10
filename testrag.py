@@ -56,8 +56,8 @@ def evaluate_test_questions(csv_path, db_path):
         test_memoir_content = file.read()
 
     # Save memoir to database (this now includes image path handling)
-    title = "Alan's Memoir"
-    author = "Alan"
+    title = "alan test"
+    author = "alan plush"
     save_memoir_to_db(conn, title, author, test_memoir_content)
 
     # Load test questions from CSV

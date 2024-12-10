@@ -80,7 +80,6 @@ def initialize_db(db_path='memoirs.db'):
     conn.commit()
     return conn
 
-# Add column for text to image system prompt
 def add_system_prompt_column(conn):
     """
     Ensures the system_prompt column exists in memoir_chunks.
@@ -96,8 +95,10 @@ def add_system_prompt_column(conn):
         ''')
         conn.commit()
 
-# Add column for generated image path
 def add_image_path_column(conn):
+    """
+    Adds column for generated image path in memoir_chunks.
+    """
     cursor = conn.cursor()
     cursor.execute('''
         PRAGMA table_info(memoir_chunks);
@@ -110,6 +111,9 @@ def add_image_path_column(conn):
         conn.commit()
 
 def save_memoir_to_db(conn, title, author, content):
+    """
+    Saves a memoir and its metadata to the database.
+    """
     cursor = conn.cursor()
     
     # Insert memoir metadata
@@ -344,8 +348,8 @@ def generate_image(prompt):
         result = monster_client.generate(model, input_data)
         image_urls = result['output']
 
-        # Save the image locally
-        output_folder = '/Users/maxplush/Documents/ragnews-new/gen_image'  # Update this path
+        # Define the output folder relative to the current script location
+        output_folder = os.path.join(os.path.dirname(__file__), 'gen_image')
         os.makedirs(output_folder, exist_ok=True)
 
         image_path = os.path.join(output_folder, f'{hash(prompt)}.png')
@@ -418,6 +422,5 @@ if __name__ == '__main__':
                 print(f"Memoir '{args.title}' by {args.author} not found in the database.")
 
 # python3 memrag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
-# to run
 # python3 memrag.py --title "alan test" --author "alan plush" 
 

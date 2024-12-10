@@ -15,7 +15,11 @@ def load_memoir_from_db(conn, memoir_id):
 def display_memoir_content(memoir_data):
     for author, chunk, image_path in memoir_data:
         if image_path:
-            st.image(image_path, caption="Memoir Chapter Image", use_container_width=True)
+                st.image(
+                image_path,
+                caption="MonsterGPT - Memoir Chapter Image",
+                use_container_width=True
+            )
         st.write(chunk)
 
 def handle_user_question(conn, user_input, memoir_id, author):
