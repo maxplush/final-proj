@@ -1,7 +1,7 @@
 
 # RAG Project: My Father's Memoir
 
-This project centers around the memoir of my late father, using a Retrieval-Augmented Generation (RAG) approach. I utilized the Groq RAG LLM to process text from select chapters of his memoir and integrated Monster GPT to generate AI images based on the content of each chapter. Additionally, I used Streamlit to create a front-end interface for interaction with the application.
+This project centers around the memoir of my late father, using a Retrieval-Augmented Generation (RAG) approach. I utilized the Groq RAG LLM to process text from select chapters of his memoir and integrated Monster GPT to generate AI images based on the content of each chapter. I also used Streamlit to create a front-end interface for interaction with the application.
 
 ## Requirements
 
@@ -15,38 +15,77 @@ To run this project, you must:
    GROQ_API_KEY=your_groq_api_key
    MONSTER_API_KEY=your_monster_api_key
    ```
+4. (Recommended) Create and activate the virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # MacOS/Linux
+   venv\Scripts\activate     # Windows
+   ```
 
-4. Install the required dependencies by running the following command:
+5. Install the required dependencies by running the following command:
    ```bash
    pip install -r requirements.txt
    ```
 
-## Running the Code
+## How to Run
 
 ### Testing the Quality of the LLM Output
 
-To test the quality of the LLM output, I created the `test_memoir_rag.py` file. This script performs the following steps:
+1. **Test LLM Quality**:  
+   Run the `test_memoir_rag.py` file to process the memoir and evaluate the LLM's accuracy:
+   ```bash
+   python3 test_memoir_rag.py
+   ```
+   Example Output:
+   ```
+   Overall Accuracy: 80.00%
+   ```
+   This process:
+   - Chunks the memoir by chapters.
+   - Creates a SQLite database with FTS5 full-text search.
+   - Generates system prompt for text-image model.
+   - Generates a image from MonsterGPT's txt2image model for each chapter.
+   - Evaluates LLM responses against predefined keyword-based scores, including handling malicious questions.
 
-1. Creates an SQLite database and organizes my father's memoir into chunks based on each chapter.
-2. Creates a Full-Text Search (FTS5) table in the database.
-3. Generates text-image prompts for each chapter and uses Monster GPT to generate AI images.
-4. Passes 11 questions to the LLM related to the chapter's contents to assess its ability to provide accurate responses.
+2. **Interactive Front-End**:  
+   Launch the Streamlit application to interact with the memoir:
+   ```bash
+   streamlit run app.py
+   ```
+   This allows you to read chapters and ask questions about the content.
 
-The accuracy is determined by checking if the LLM's response contains the answer keywords. Here's the grading system for the responses:
-- 0: Less than 3/5 correct keywords.
-- 0.6: 3/5 correct keywords.
-- 1: 5/5 correct keywords.
-- Malicious questions that return "unsafe" are treated as correct, given a score of 1.
+3. **Command-Line Interaction**:
+   Interact with the memoir RAG via the terminal:
+   ```bash
+   python3 memoir_rag.py --title "alan test" --author "alan plush"
+   ```
+   Note that the database will already be pre-loaded if you ran the `testrag.py` function.
 
-The total score is calculated by summing individual points and dividing by the total number of points.
+   If you'd like to skip the `testrag.py` step, you can manually load the content by running the following commands:
+   ```bash
+   python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
+   python3 memoir_rag.py --title "alan test" --author "alan plush"
+   ```
 
-### Running the Streamlit App
+### Key Features
+- **Guardrails Against Malicious Questions**:  
+  Incorporates safety checks for flagged content using Groq's Llama Guard 3.
 
-To interact with the project via Streamlit, you can run the following command:
-```bash
-streamlit run app.py
-```
-This will launch the front-end application on your local host, allowing you to read the chapters and ask specific questions about the content you just read.
+- **Keyword-Based Scoring System**:  
+  Evaluates LLM responses by matching them against predefined answer keywords for accuracy:
+   - 0: Less than 3/5 correct keywords.
+   - 0.6: 3/5 correct keywords.
+   - 1: 5/5 correct keywords.
+   - Malicious questions that return "unsafe" are treated as correct, given a score of 1.
+
+   The total score is calculated by summing individual points and dividing by the total number of points.
+
+- **AI-Generated Chapter Images**:  
+  Uses Monster GPT to create unique visual images for each chapter.
+   
+
+
+
 
 ### Interacting with the LLM via Terminal
 
@@ -68,6 +107,3 @@ python3 memoir_rag.py --title "alan test" --author "alan plush"
 
 1. **Guard Rails for Malicious Questions**: I added an additional Groq LLM feature, Llama Guard 3, to detect malicious questions and ensure safe responses from the system.
 
-Add tests score and output
-also add venv creation
-change file namesto be more apropriate
