@@ -29,8 +29,6 @@ To run this project, you must:
 
 ## How to Run
 
-### Testing the Quality of the LLM Output
-
 1. **Test LLM Quality**:  
    Run the `test_memoir_rag.py` file to process the memoir and evaluate the LLM's accuracy:
    ```bash
@@ -47,7 +45,7 @@ To run this project, you must:
    - Generates a image from MonsterGPT's txt2image model for each chapter.
    - Evaluates LLM responses against predefined keyword-based scores, including handling malicious questions.
 
-2. **Interactive Front-End**:  
+2. **Front End**:  
    Launch the Streamlit application to interact with the memoir:
    ```bash
    streamlit run app.py
@@ -67,7 +65,7 @@ To run this project, you must:
    python3 memoir_rag.py --title "alan test" --author "alan plush"
    ```
 
-### Key Features
+## Key Features
 - **Guardrails Against Malicious Questions**:  
   Incorporates safety checks for flagged content using Groq's Llama Guard 3.
 
@@ -82,28 +80,4 @@ To run this project, you must:
 
 - **AI-Generated Chapter Images**:  
   Uses Monster GPT to create unique visual images for each chapter.
-   
-
-
-
-
-### Interacting with the LLM via Terminal
-
-If you'd like to interact with the LLM via the terminal, you can run the following command:
-```bash
-python3 memoir_rag.py --title "alan test" --author "alan plush"
-```
-Note that the database will already be pre-loaded if you ran the `testrag.py` function.
-
-### Skipping the `test_memoir_rag.py` Step
-
-If you'd like to skip the `testrag.py` step, you can manually load the content by running the following commands:
-```bash
-python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
-python3 memoir_rag.py --title "alan test" --author "alan plush"
-```
-
-## Additional Features
-
-1. **Guard Rails for Malicious Questions**: I added an additional Groq LLM feature, Llama Guard 3, to detect malicious questions and ensure safe responses from the system.
 
