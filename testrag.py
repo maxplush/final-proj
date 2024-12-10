@@ -111,6 +111,6 @@ def evaluate_test_questions(csv_path, db_path):
 
 if __name__ == "__main__":
     # Example usage
-    test_csv_path = "test_questions.csv"  # Update with your CSV file path
+    test_csv_path = "test_questions.csv"
     database_path = "memoirs.db"
     evaluate_test_questions(test_csv_path, database_path)
