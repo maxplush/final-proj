@@ -62,6 +62,8 @@ To run this project, you must:
    If you'd like to skip the `testrag.py` step, you can manually load the content by running the following commands:
    ```bash
    $ python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
+   ```
+      ```bash
    $ python3 memoir_rag.py --title "alan test" --author "alan plush"
    ```
 

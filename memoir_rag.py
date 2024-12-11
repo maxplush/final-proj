@@ -24,10 +24,6 @@ import re
 from monsterapi import client
 import requests
 
-# NOTE: Suppressing warning from Pydantic regarding the "model_" namespace conflict.
-# Due to a conflict between a field name and Pydantic's reserved internal namespace.
-warnings.filterwarnings("ignore", module="pydantic._internal._fields")
-
 ################################################################################
 # LLM setup
 ################################################################################
