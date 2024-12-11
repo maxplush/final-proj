@@ -1,8 +1,6 @@
 
 # RAG Project: My Father's Memoir
 
-Before his passing, my father wrote a memoir, capturing his life and stories. Five years later, I wanted an to create an interactive experience for exploring the memoir.
-
 This project is a exploration of my late father's memoir using a Retrieval-Augmented Generation (RAG) approach to create an interactive experience for exploring the memoir. Through LLM keyword extraction from user questions and performing full-text searches (FTS5), it retrieves the most relevant passages.
 
 I also used Streamlit to create a simple interactive front end with AI-generated images from Monster API, that uses the Pix-Art-Sigma text-to-image model. Currently, three short chapters are included—those I feel comfortable sharing.
@@ -13,7 +11,7 @@ To run this project, you must:
 
 1. Create a **Groq API key**.
 2. Create a **Monster API key**.
-3. Store these keys in a `.env` file with the following format:
+3. Create a `.env` file and store these keys in the following format:
 
    ```
    GROQ_API_KEY=your_groq_api_key

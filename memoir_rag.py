@@ -421,6 +421,3 @@ if __name__ == '__main__':
             else:
                 print(f"Memoir '{args.title}' by {args.author} not found in the database.")
 
-# python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
-# python3 memoir_rag.py --title "alan test" --author "alan plush" 
-
