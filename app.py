@@ -26,7 +26,7 @@ def handle_user_question(conn, user_input, memoir_id, author):
     return search_across_chunks(conn, user_input, memoir_id, author)
 
 def main():
-    st.title("Memoir Interactive QA")
+    st.title("Alan's Memoir: Interactive Q&A")
     conn = sqlite3.connect('memoirs.db')
     memoir_id = 1 # Modify per the memoir ID you want to interact with
     memoir_data = load_memoir_from_db(conn, memoir_id)
