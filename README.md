@@ -75,7 +75,7 @@ To run this project, you must:
   Incorporates safety checks for flagged content using Groq's Llama Guard 3.
 
 - **Keyword-Based Scoring System**:  
-  Evaluates LLM responses by matching them against predefined answer keywords for accuracy:
+  Evaluates LLM's effectiveness of responses by matching them against predefined answer keywords for accuracy:
    - 0: Less than 3/5 correct keywords.
    - 0.6: 3/5 correct keywords.
    - 1: 5/5 correct keywords.
