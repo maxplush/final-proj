@@ -1,10 +1,20 @@
-
-
 '''
-Store a memoir in a database and run an interactive QA session using the Groq LLM API.
-The memoir is loaded from a text file, stored in a database, and can be referenced during conversations.
+Stores Alan's memoir in a database and runs an interactive QA session 
+using the Groq LLM API and retrieval-augmented generation (RAG).
+The memoir is loaded from a text file, stored in a database, and can be 
+referenced during conversations.
+
+The Groq LLM generates a system prompt for a text-to-image model, which 
+is saved in the database. The prompt is then sent to the Monster API's 
+text-to-image model, and the image path is saved in the database. 
+Generated images are stored in the 'gen_image' folder.
+
+During the QA session, user questions are checked for malicious content 
+and processed for keyword extraction, enabling full-text search and 
+returning the best match from the memoir.
 '''
 
+import warnings
 import logging
 import os
 import groq
@@ -14,6 +24,9 @@ import re
 from monsterapi import client
 import requests
 
+# NOTE: Suppressing warning from Pydantic regarding the "model_" namespace conflict.
+# Due to a conflict between a field name and Pydantic's reserved internal namespace.
+warnings.filterwarnings("ignore", module="pydantic._internal._fields")
 
 ################################################################################
 # LLM setup
