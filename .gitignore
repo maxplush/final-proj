@@ -4,7 +4,6 @@
 *.db
 __pycache__
 venv
-alan_test_doc.txt
 memoirs.db
 ricktestdoc.txt
 /gen_image/*
