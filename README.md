@@ -1,11 +1,11 @@
 
 # RAG Project: My Father's Memoir
 
-This project is a exploration of my late father's memoir using a Retrieval-Augmented Generation (RAG) approach to create an interactive experience for exploring the memoir. Through LLM keyword extraction from user questions and performing full-text searches (FTS5), it retrieves the most relevant passages.
+This project is a exploration of my late father's memoir using a Retrieval-Augmented Generation (RAG) approach to create an interactive experience for exploring the memoir. Through LLM keyword extraction from user questions and performing full-text searches (FTS5), it retrieves the most relevant responses.
 
 I also used Streamlit to create a simple interactive front end with AI-generated images from Monster API, that uses the Pix-Art-Sigma text-to-image model. Currently, three short chapters are included—those I feel comfortable sharing.
 
-## Requirements
+## Setup Instructions
 
 To run this project, you must:
 
@@ -19,14 +19,14 @@ To run this project, you must:
    ```
 4. (Recommended) Create and activate the virtual environment:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # MacOS/Linux
-   venv\Scripts\activate     # Windows
+   $ python3 -m venv venv
+   $ source venv/bin/activate  # MacOS/Linux
+   $ venv\Scripts\activate     # Windows
    ```
 
 5. Install the required dependencies by running the following command:
    ```bash
-   pip install -r requirements.txt
+   $ pip install -r requirements.txt
    ```
 
 ## How to Run
@@ -36,7 +36,7 @@ To run this project, you must:
 1. **Test Accuracy of LLM Output**:  
    Run the `test_memoir_rag.py` file to process the memoir and evaluate the LLM's accuracy:
    ```bash
-   python3 test_memoir_rag.py
+   $ python3 test_memoir_rag.py
    ```
    Example Output:
    ```
@@ -53,21 +53,21 @@ To run this project, you must:
 2. **Front End**:  
    Launch the Streamlit application to interact with the memoir:
    ```bash
-   streamlit run app.py
+   $ streamlit run app.py
    ```
    This allows you to read chapters and ask questions about the content.
 
 3. **Command-Line Interaction**:  
    Interact with the memoir RAG via the terminal:
    ```bash
-   python3 memoir_rag.py --title "alan test" --author "alan plush"
+   $ python3 memoir_rag.py --title "alan test" --author "alan plush"
    ```
    Note that the database will already be pre-loaded if you ran the `testrag.py` function.
 
    If you'd like to skip the `testrag.py` step, you can manually load the content by running the following commands:
    ```bash
-   python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
-   python3 memoir_rag.py --title "alan test" --author "alan plush"
+   $ python3 memoir_rag.py --save --title "alan test" --author "alan plush" --content "alan_test_doc.txt"
+   $ python3 memoir_rag.py --title "alan test" --author "alan plush"
    ```
 
 ## Key Features
