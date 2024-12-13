@@ -43,7 +43,12 @@ To run this project, you must:
    - Creates a SQLite database, tables and full-text search(FTS5) tables.
    - Generates a system prompt for text-image model from Groq.
    - Generates a image from Monster's txt2image model for each chapter.
-   - Evaluates LLM responses against predefined keyword-based scores, including handling malicious questions.
+   - Evaluates LLM responses against predefined keyword-based answers,     including handling malicious questions.
+      - 0: Less than 3/5 correct keywords.
+      - 0.6: 3-4/5 correct keywords.
+      - 1: 5/5 correct keywords.
+      - Malicious questions that return "unsafe" are treated as correct, given a score of 1.
+      - The total score is calculated by summing individual points and dividing by the total number of questions.
 
 2. **Front End**:  
    Launch the Streamlit application to interact with the memoir:
@@ -73,12 +78,6 @@ To run this project, you must:
 
 - **Keyword-Based Scoring System**:  
   Evaluates LLM's effectiveness of responses by matching them against predefined answer keywords for accuracy:
-   - 0: Less than 3/5 correct keywords.
-   - 0.6: 3-4/5 correct keywords.
-   - 1: 5/5 correct keywords.
-   - Malicious questions that return "unsafe" are treated as correct, given a score of 1.
-
-   The total score is calculated by summing individual points and dividing by the total number of questions.
 
 - **AI-Generated Chapter Images**:  
   Uses the Monster text2image image generation model to create images about the setting of each chapter.
