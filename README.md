@@ -7,8 +7,9 @@ This project enables interaction with my late father's memoir through a Retrieva
 ## Sample Conversation
 
 <p align="center">
-  <img src="readme_images/example_screenshot.jpg" alt="Example Chapter">
-  <img src="readme_images/chat.PNG" alt="Example Chat Interaction">
+  <img src="readme_images/landing_page.png" alt="Example Chapter">
+  <img src="readme_images/grand_canyon.png" alt="Example Chapter">
+  <img src="readme_images/example_Screenshot.png" alt="Example Chat Interaction">
 </p>
 
 ## Setup Instructions
