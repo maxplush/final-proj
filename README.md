@@ -3,7 +3,14 @@
 
 This project enables interaction with my late father's memoir through a Retrieval-Augmented Generation (RAG) approach. It uses the Groq LLM for keyword extraction and SQLite's built-in FTS5 full-text search system to find the best result. The interface is a Streamlit application, with images generated with the Monster API using the Pix-Art-Sigma model. Three short chapters have been included, reflecting those I feel comfortable sharing.
 
+<<<<<<< HEAD
 ## Sample Conversation
+=======
+<p align="center">
+  <img src="readme_images/example_screenshot.jpg" alt="Example Chapter">
+  <img src="readme_images/chat.PNG" alt="Example Chat Interaction">
+</p>
+>>>>>>> origin/main
 
 ## Setup Instructions
 
@@ -45,7 +52,12 @@ To run this project, you must:
    - Creates a SQLite database, tables and full-text search(FTS5) tables.
    - Generates a system prompt for text-image model from Groq.
    - Generates a image from Monster's txt2image model for each chapter.
-   - Evaluates LLM responses against predefined keyword-based scores, including handling malicious questions.
+   - Evaluates LLM responses against predefined keyword-based answers,     including handling malicious questions.
+      - 0: Less than 3/5 correct keywords.
+      - 0.6: 3-4/5 correct keywords.
+      - 1: 5/5 correct keywords.
+      - Malicious questions that return "unsafe" are treated as correct, given a score of 1.
+      - The total score is calculated by summing individual points and dividing by the total number of questions.
 
 2. **Front End**:  
    Launch the Streamlit application to interact with the memoir:
@@ -75,12 +87,6 @@ To run this project, you must:
 
 - **Keyword-Based Scoring System**:  
   Evaluates LLM's effectiveness of responses by matching them against predefined answer keywords for accuracy:
-   - 0: Less than 3/5 correct keywords.
-   - 0.6: 3-4/5 correct keywords.
-   - 1: 5/5 correct keywords.
-   - Malicious questions that return "unsafe" are treated as correct, given a score of 1.
-
-   The total score is calculated by summing individual points and dividing by the total number of questions.
 
 - **AI-Generated Chapter Images**:  
   Uses the Monster text2image image generation model to create images about the setting of each chapter.
