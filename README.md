@@ -8,7 +8,7 @@ This project enables interaction with my late father's memoir through a Retrieva
 
 <p align="center">
   <img src="readme_images/landing_page.png" alt="Example Chapter">
-  <img src="readme_images/grand_canyon.png" alt="Example Chapter">
+  <img src="readme_images/car_example.png" alt="Example Chapter">
   <img src="readme_images/example_screenshot.png" alt="Example Chat Interaction">
 </p>
 
@@ -16,8 +16,8 @@ This project enables interaction with my late father's memoir through a Retrieva
 
 To run this project, you must:
 
-1. Create a **Groq API key**.
-2. Create a **Monster API key**.
+1. Create a [Groq API key](https://console.groq.com/docs/quickstart).
+2. Create a [Monster API key](https://developer.monsterapi.ai/reference/introduction-1).
 3. Create a `.env` file and store these keys in the following format:
 
    ```
@@ -52,7 +52,7 @@ To run this project, you must:
    - Creates a SQLite database, tables and full-text search(FTS5) tables.
    - Generates a system prompt for text-image model from Groq.
    - Generates a image from Monster's txt2image model for each chapter.
-   - Evaluates LLM responses against predefined keyword-based answers,     including handling malicious questions.
+   - Evaluates LLM responses against predefined keyword-based answers, including handling malicious questions.
       - 0: Less than 3/5 correct keywords.
       - 0.6: 3-4/5 correct keywords.
       - 1: 5/5 correct keywords.
