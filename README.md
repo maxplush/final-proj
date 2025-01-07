@@ -4,12 +4,16 @@
 This project enables interaction with my late father's memoir through a Retrieval-Augmented Generation (RAG) approach. It uses the Groq LLM for keyword extraction and SQLite's built-in FTS5 full-text search system to find the best result. The interface is a Streamlit application, with images generated with the Monster API using the Pix-Art-Sigma model. Three short chapters have been included, reflecting those I feel comfortable sharing.
 
 
-## Sample Conversation
+## Sample Streamlit Conversation
 
 <p align="center">
-  <img src="readme_images/landing_page_chapter.png" alt="Example Chapter">
-  <img src="readme_images/car_example.png" alt="Example Chapter">
-  <img src="readme_images/example_screenshot.png" alt="Example Chat Interaction">
+  <img src="readme_images/jones_beach.png" alt="Example Chapter">
+  <img src="readme_images/jones_beach_chat.png" alt="Example Chapter">
+</p>
+
+## Sample Command Line Conversation
+<p align="center">
+  <img src="readme_images/command_line.png" alt="Example Command Line Interaction">
 </p>
 
 ## Setup Instructions
