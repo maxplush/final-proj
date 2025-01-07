@@ -9,7 +9,7 @@ This project enables interaction with my late father's memoir through a Retrieva
 <p align="center">
   <img src="readme_images/landing_page.png" alt="Example Chapter">
   <img src="readme_images/grand_canyon.png" alt="Example Chapter">
-  <img src="readme_images/example_Screenshot.png" alt="Example Chat Interaction">
+  <img src="readme_images/example_screenshot.png" alt="Example Chat Interaction">
 </p>
 
 ## Setup Instructions
