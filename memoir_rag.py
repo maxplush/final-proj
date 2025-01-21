@@ -14,7 +14,6 @@ and processed for keyword extraction, enabling full-text search and
 returning the best match from the memoir.
 '''
 
-import warnings
 import logging
 import os
 import groq
@@ -23,13 +22,15 @@ import argparse
 import re
 from monsterapi import client
 import requests
+import streamlit as st
 
 ################################################################################
 # LLM setup
 ################################################################################
 
 groq_client = groq.Groq(
-    api_key=os.environ.get("GROQ_API_KEY"),
+    api_key = st.session_state.api_keys.get("GROQ_API_KEY"),
+    # api_key=os.environ.get("GROQ_API_KEY"),
 )
 
 def run_llm(system, user, model='llama3-8b-8192', seed=None):
@@ -338,7 +339,8 @@ def generate_system_prompt(author, chapter_content):
     return image_prompt 
 
 # Initialize the client with the API key from environment variables
-api_key = os.environ.get("MONSTER_API_KEY")
+api_key = st.session_state.api_keys.get("MONSTER_API_KEY")
+# api_key = os.environ.get("MONSTER_API_KEY")
 monster_client = client(api_key)
 
 def generate_image(prompt):
